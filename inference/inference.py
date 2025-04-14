@@ -4,7 +4,7 @@ import torch
 import numpy as np
 from stable_baselines3 import DDPG
 from stable_baselines3.common.noise import NormalActionNoise
-from pendulum_env import InvertedPendulumEnv  # import your custom env
+from environments.pendulum_env import InvertedPendulumEnv  # import your custom env
 
 # Load the trained model
 model = DDPG.load("ddpg_assistive_walker")

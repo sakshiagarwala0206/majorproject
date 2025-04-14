@@ -4,7 +4,7 @@ import numpy as np
 from stable_baselines3 import DDPG
 from stable_baselines3.common.noise import NormalActionNoise
 
-from cartpole_env import InvertedPendulumEnvGymnasium  # 🔄 Your custom environment class
+from environments.cartpole_env import InvertedPendulumEnvGymnasium  # 🔄 Your custom environment class
 
 # 🎯 Load the trained model
 model = DDPG.load("ddpg_inverted_pendulum")
