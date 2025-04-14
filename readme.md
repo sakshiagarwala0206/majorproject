@@ -110,9 +110,3 @@ Made with ❤️ for balancing robots.
 
 ```
 
----
-
-Let me know if you’d like me to add:
-- A `requirements.txt`
-- An `inference_video.py` variant with video recording
-- A section on training the DDPG model from scratch
