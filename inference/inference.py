@@ -4,13 +4,18 @@ import torch
 import numpy as np
 from stable_baselines3 import DDPG
 from stable_baselines3.common.noise import NormalActionNoise
-from environments.pendulum_env import InvertedPendulumEnv  # import your custom env
+from environments.pendulum_env import InvertedPendulumEnv  
+import os# import your custom env
+from environments.cartpole_env import CartPoleEnv
 
-# Load the trained model
-model = DDPG.load("ddpg_assistive_walker")
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), './'))  # Going to project root
+model_path= os.path.join(project_root, "ddpg_inverted_pendulum.zip")
+
+# 🎯 Load the trained model
+model = DDPG.load(model_path)
 
 # Create the environment
-env = InvertedPendulumEnv(render=True)
+env = CartPoleEnv(render=True)
 obs, _ = env.reset()
 
 # Print action space limits (to ensure actions are within bounds)

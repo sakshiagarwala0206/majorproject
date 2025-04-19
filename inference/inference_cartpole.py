@@ -5,9 +5,15 @@ from stable_baselines3 import DDPG
 from stable_baselines3.common.noise import NormalActionNoise
 
 from environments.cartpole_env import InvertedPendulumEnvGymnasium  # 🔄 Your custom environment class
+from gymnasium.envs.registration import register
+import os
+import sys
+
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), './'))  # Going to project root
+model_path= os.path.join(project_root, "ddpg_inverted_pendulum.zip")
 
 # 🎯 Load the trained model
-model = DDPG.load("ddpg_inverted_pendulum")
+model = DDPG.load(model_path)
 
 # 🛠️ Create the environment
 env = InvertedPendulumEnvGymnasium(render_mode="human")

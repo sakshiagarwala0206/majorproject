@@ -4,7 +4,6 @@ import numpy as np
 import pybullet as p
 import pybullet_data
 import os
-# urdf_path = os.getenv("URDF_PATH", "urdf.cartpole.urdf")
 
 class CartPoleEnv(gymnasium.Env):
     def __init__(self, render=False):
@@ -21,8 +20,8 @@ class CartPoleEnv(gymnasium.Env):
 
         self.cartpole_id = None
 
-        # Action: Torque applied to cart and pole
-        self.action_space = spaces.Box(low=np.array([-5.0, -5.0]), high=np.array([5.0, 5.0]), dtype=np.float32)
+        # Discrete actions: 0 = left, 1 = right
+        self.action_space = spaces.Discrete(2)
 
         # Observation: [pole_angle, pole_velocity, cart_position, cart_velocity]
         obs_high = np.array([np.pi, np.inf, np.inf, np.inf], dtype=np.float32)
@@ -34,25 +33,16 @@ class CartPoleEnv(gymnasium.Env):
         p.setGravity(0, 0, -9.81)
         p.loadURDF("plane.urdf")
 
-        
-
-         # Get the absolute path to the urdf directory
-        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))  # Going to project root
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))
         urdf_path = os.path.join(project_root, 'urdf', 'cartpole.urdf')
 
-        # Debug: print the computed URDF path
-        print(f"Looking for URDF at: {urdf_path}")
-
-        # Check if URDF exists
         if not os.path.exists(urdf_path):
             raise FileNotFoundError(f"URDF file not found at {urdf_path}")
 
-        # Load the URDF model
         self.cartpole_id = p.loadURDF(urdf_path, basePosition=[0, 0, 0.1])
 
-        # Set initial joint control to zero (no movement)
-        p.setJointMotorControl2(self.cartpole_id, 0, p.VELOCITY_CONTROL, force=0)  # cart joint
-        p.setJointMotorControl2(self.cartpole_id, 1, p.VELOCITY_CONTROL, force=0)  # pole joint
+        p.setJointMotorControl2(self.cartpole_id, 0, p.VELOCITY_CONTROL, force=0)
+        p.setJointMotorControl2(self.cartpole_id, 1, p.VELOCITY_CONTROL, force=0)
 
         for _ in range(10):
             p.stepSimulation()
@@ -60,12 +50,11 @@ class CartPoleEnv(gymnasium.Env):
         return self._get_obs(), {}
 
     def step(self, action):
-        cart_torque = float(action[0])
-        pole_torque = float(action[1])
+        torque = 5.0 if action == 1 else -5.0  # Right or Left
 
-        # Apply torque to cart and pole
-        p.setJointMotorControl2(self.cartpole_id, 0, p.TORQUE_CONTROL, force=cart_torque)
-        p.setJointMotorControl2(self.cartpole_id, 1, p.TORQUE_CONTROL, force=pole_torque)
+        # Only apply torque to the cart joint
+        p.setJointMotorControl2(self.cartpole_id, 0, p.TORQUE_CONTROL, force=torque)
+        p.setJointMotorControl2(self.cartpole_id, 1, p.TORQUE_CONTROL, force=0.0)
 
         p.stepSimulation()
 
@@ -77,12 +66,10 @@ class CartPoleEnv(gymnasium.Env):
         return obs, reward, terminated, truncated, {}
 
     def _get_obs(self):
-        # Joint 0: cart joint
         cart_state = p.getJointState(self.cartpole_id, 0)
         cart_position = cart_state[0]
         cart_velocity = cart_state[1]
 
-        # Joint 1: pole joint
         pole_state = p.getJointState(self.cartpole_id, 1)
         pole_angle = pole_state[0]
         pole_velocity = pole_state[1]
@@ -91,12 +78,12 @@ class CartPoleEnv(gymnasium.Env):
 
     def _get_reward(self, obs):
         pole_angle = obs[0]
-        return 1.0 - (abs(pole_angle) / np.pi)  # Closer to upright, higher the reward
+        return 1.0 - (abs(pole_angle) / np.pi)
 
     def _is_done(self, obs):
         pole_angle = obs[0]
         cart_position = obs[2]
-        return abs(pole_angle) > 0.5 or abs(cart_position) > 2.4  # Failure if pole tilts too much or cart moves too far
+        return abs(pole_angle) > 0.5 or abs(cart_position) > 2.4
 
     def close(self):
         p.disconnect()

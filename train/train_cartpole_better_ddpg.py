@@ -7,8 +7,16 @@ from stable_baselines3.common.logger import configure
 import numpy as np
 import logging
 import wandb
+import sys
+import os
 from wandb.integration.sb3 import WandbCallback
 from gymnasium.envs.registration import register
+
+# Add project root directory to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
+
+# Now you can import the environment
+from environments.cartpole_env import CartPoleEnv  # Import the CartPoleEnv class
 
 # 📝 Logging config
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
@@ -16,8 +24,8 @@ logger = logging.getLogger()
 
 # ✅ Register your environment
 register(
-    id='AssistiveWalker-v0',
-    entry_point='pendulum_env1:AssistiveWalkerEnv1',
+    id='CartPole-v1',
+    entry_point='environments.cartpole_env:CartPoleEnv',  # Correct the entry point
 )
 
 # ✅ WandB init
@@ -30,7 +38,7 @@ wandb.init(
         "action_noise": 0.1,
         "gamma": 0.99,
         "tau": 0.005,
-        "learning_rate": 1e-3
+        "learning_rate": 1e-3,
     },
     sync_tensorboard=True,
     monitor_gym=True,
@@ -38,7 +46,8 @@ wandb.init(
 )
 
 # 🎮 Environment + Monitor
-env = gymnasium.make("AssistiveWalker-v0", render_mode=None)
+env = gymnasium.make("CartPole-v1", render=False)  # Use your custom environment
+# env = CartPoleEnv(render=False)  # Use your custom environment
 env = Monitor(env)
 
 # 🔁 Action noise
@@ -58,7 +67,7 @@ model = DDPG(
 checkpoint_callback = CheckpointCallback(
     save_freq=10_000,
     save_path="./checkpoints/",
-    name_prefix="ddpg_walker",
+    name_prefix="ddpg_cartpole",
     save_replay_buffer=True,
     save_vecnormalize=True,
 )
@@ -71,6 +80,6 @@ logger.info("🚀 Starting training...")
 model.learn(total_timesteps=100_000, callback=callback)
 
 # ✅ Save final model
-model.save("ddpg_assistive_walker")
+model.save("ddpg_cartpole")
 logger.info("✅ Model saved.")
 wandb.finish()
