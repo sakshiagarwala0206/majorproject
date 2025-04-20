@@ -41,3 +41,8 @@ sac_tensorboard/
 ddpg_tensorboard/
 sac/
 ddpg/
+logs/
+__pycache__/
+*.egg-info/
+*.egg
+*.egg-info/
