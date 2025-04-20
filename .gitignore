@@ -46,3 +46,4 @@ __pycache__/
 *.egg-info/
 *.egg
 *.egg-info/
+__pycache__/

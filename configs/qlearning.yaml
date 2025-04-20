@@ -1,12 +1,14 @@
-# configs/qlearning.yaml
-
-env: CartPole
-algorithm: qlearning
-total_episodes: 5000
-epsilon_start: 1.0
+env: CartPole-v1
+algo: qlearning
+total_episodes: 20000
+learning_rate: 0.05
+discount_factor: 0.99
+epsilon: 1.0
 epsilon_min: 0.01
-epsilon_decay: 0.995
-alpha: 0.1
-gamma: 0.99
-bins: 6
+epsilon_decay: 0.997
+bins: 20
+alpha_schedule: constant
+max_steps: 200
+exploration_strategy: epsilon
+seed: 42
 checkpoint_interval: 500

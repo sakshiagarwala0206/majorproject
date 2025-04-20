@@ -1,0 +1,2 @@
+python train/train_rl.py --config configs/qlearning.yaml
+
