@@ -6,10 +6,11 @@ import pybullet_data
 import os
 
 class CartPoleEnv(gymnasium.Env):
-    def __init__(self, render=False):
+    metadata = {"render_modes": ["human", "rgb_array"]}
+    def __init__(self, render_mode=None):
         super(CartPoleEnv, self).__init__()
-        self.render_mode = render
-        if self.render_mode:
+        self.render_mode = render_mode
+        if self.render_mode == "human":
             p.connect(p.GUI)
         else:
             p.connect(p.DIRECT)
@@ -50,7 +51,7 @@ class CartPoleEnv(gymnasium.Env):
         return self._get_obs(), {}
 
     def step(self, action):
-        torque = 5.0 if action == 1 else -5.0  # Right or Left
+        torque = 10.0 if action == 1 else -10.0  # Right or Left  #torque value is over here
 
         # Only apply torque to the cart joint
         p.setJointMotorControl2(self.cartpole_id, 0, p.TORQUE_CONTROL, force=torque)

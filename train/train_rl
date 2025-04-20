@@ -5,81 +5,93 @@ import wandb
 import logging
 import sys
 import pickle
-from gymnasium.envs.registration import register
+
 from gymnasium.envs.registration import register
 
-# Add project root directory to sys.path
+# 📁 Project root for importing custom env
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
-
-# Now you can import the environment
-from environments.cartpole_rl import CartPoleEnv  # Import the CartPoleEnv class
+from environments.cartpole_rl import CartPoleEnv  # Your custom environment
 
 # 📝 Logging config
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger()
 
-# ✅ Register your environment
+# ✅ Register the custom Gym environment
 register(
     id='CartPole-v1',
-    entry_point='environments.cartpole_rl:CartPoleEnv',  # Correct the entry point
+    entry_point='environments.cartpole_rl:CartPoleEnv',
 )
 
-
-
-
-# ✅ WandB init
+# 🎯 WandB configuration
 wandb.init(
     project="assistive-walker-qlearning",
     config={
         "algo": "Q-Learning",
-        "total_episodes": 10_000,
-        "learning_rate": 0.1,
+        "total_episodes": 20_000,
+        "learning_rate": 0.05,
         "discount_factor": 0.99,
         "epsilon": 1.0,
-        "epsilon_min": 0.05,
-        "epsilon_decay": 0.995,
-        "bins": 10,
+        "epsilon_min": 0.01,
+        "epsilon_decay": 0.997,
+        "bins": 20,
+        "alpha_schedule": "constant",  # Options: 'constant', 'decay'
+        "max_steps": 200,
+        "exploration_strategy": "epsilon",
+        "seed": 42
     },
     save_code=True,
 )
 
 config = wandb.config
 
-# 🎮 Environment + Monitor
-env = gymnasium.make("CartPole-v1", render=False)
+# 🎮 Set seed for reproducibility
+np.random.seed(config.seed)
 
-# 🧠 Q-table utils
+# 🎮 Make the environment
+env = gymnasium.make("CartPole-v1", render_mode=None)
+env.action_space.seed(config.seed)
+env.observation_space.seed(config.seed)
+
+# 🧠 Binning functions
 def create_bins(low, high, bins):
     return [np.linspace(l, h, bins - 1) for l, h in zip(low, high)]
 
 def discretize(obs, bins):
+    obs = np.clip(obs, obs_low, obs_high)  # Prevent overflow
     return tuple(int(np.digitize(x, b)) for x, b in zip(obs, bins))
 
-# Discretize the observation space
+# 🚀 Discretization setup
 obs_low = env.observation_space.low
 obs_high = env.observation_space.high
 bins = create_bins(obs_low, obs_high, config.bins)
-# q_table = np.random.uniform(low=-1, high=1, size=([config.bins] * len(obs_low) + [env.action_space.n]))  # Q-table
-# Check if action_space is discrete and has the 'n' attribute
-if isinstance(env.action_space, gymnasium.spaces.Discrete):
-    n_actions = env.action_space.n
-else:
-    raise TypeError(f"Expected a Discrete action space, but got {type(env.action_space)}")
 
-# Now proceed with initializing the Q-table
-q_table = np.random.uniform(low=-1, high=1, size=([config.bins] * len(obs_low) + [n_actions]))
-q_table = np.zeros([config.bins] * len(obs_low) + [env.action_space.n])  # Q-table
-# 🔁 Training loop
+# 🔁 Q-table init
+n_actions = env.action_space.n
+q_table = np.zeros([config.bins] * len(obs_low) + [n_actions])
+
+# 📈 Training loop
 rewards = []
 epsilon = config.epsilon
+
+# 🔁 Optional resume
+resume_from = None  # e.g., "./checkpoints/q_table_ep5000.pkl"
+if resume_from and os.path.exists(resume_from):
+    with open(resume_from, "rb") as f:
+        q_table = pickle.load(f)
+    logger.info(f"✅ Resumed Q-table from {resume_from}")
 
 for episode in range(config.total_episodes):
     obs, _ = env.reset()
     state = discretize(obs, bins)
     total_reward = 0
-
     done = False
-    while not done:
+
+    if config.alpha_schedule == "decay":
+        alpha = config.learning_rate * (0.99 ** episode)
+    else:
+        alpha = config.learning_rate
+
+    for step in range(config.max_steps):
         if np.random.random() < epsilon:
             action = env.action_space.sample()
         else:
@@ -89,30 +101,56 @@ for episode in range(config.total_episodes):
         done = terminated or truncated
         next_state = discretize(next_obs, bins)
 
+        # Reward shaping (optional)
+        shaped_reward = reward - 0.01 * abs(next_obs[2]) - 0.005 * abs(next_obs[3])
+
         # Q-learning update
         best_next_action = np.max(q_table[next_state])
-        q_table[state][action] += config.learning_rate * (reward + config.discount_factor * best_next_action - q_table[state][action])
+        q_table[state][action] += alpha * (shaped_reward + config.discount_factor * best_next_action - q_table[state][action])
 
         state = next_state
         total_reward += reward
+        if done:
+            break
 
     # Decay epsilon
     if epsilon > config.epsilon_min:
         epsilon *= config.epsilon_decay
 
     rewards.append(total_reward)
-    wandb.log({"episode": episode, "reward": total_reward, "epsilon": epsilon})
 
-    # 💾 Save checkpoints
+    # 📊 Log metrics
+    wandb.log({
+        "episode": episode,
+        "reward": total_reward,
+        "epsilon": epsilon,
+        "alpha": alpha,
+    })
+    if episode >= 100:
+        wandb.log({"moving_avg_reward": np.mean(rewards[-100:])})
+    if episode % 1000 == 0:
+        wandb.log({"Q-table": wandb.Histogram(q_table)})
+
+    # 💾 Checkpoint
     if episode % 500 == 0 and episode > 0:
         with open(f"./checkpoints/q_table_ep{episode}.pkl", "wb") as f:
             pickle.dump(q_table, f)
         logger.info(f"✅ Q-table saved at episode {episode}")
 
-# ✅ Save final model
-with open("q_table_final.pkl", "wb") as f:
+# ✅ Final model save
+with open("q_table_final_002.pkl", "wb") as f:
     pickle.dump(q_table, f)
 
-logger.info("✅ Final Q-table saved.")
+# ✅ Save metadata
+metadata = {
+    "total_episodes": config.total_episodes,
+    "epsilon_final": epsilon,
+    "bins": config.bins,
+    "final_reward_mean_100": np.mean(rewards[-100:]),
+}
+with open("training_metadata_001.pkl", "wb") as f:
+    pickle.dump(metadata, f)
+
+logger.info("✅ Final Q-table and metadata saved.")
 env.close()
 wandb.finish()
