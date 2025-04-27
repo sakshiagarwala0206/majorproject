@@ -1,0 +1,7 @@
+policy: "MlpPolicy"
+learning_rate: 3e-4
+gamma: 0.99
+n_steps: 2048
+batch_size: 64
+n_epochs: 10
+total_timesteps: 500_000

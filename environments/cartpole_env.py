@@ -4,7 +4,6 @@ import numpy as np
 import pybullet as p
 import pybullet_data
 import os
-# urdf_path = os.getenv("URDF_PATH", "urdf.cartpole.urdf")
 
 class CartPoleEnv(gymnasium.Env):
     def __init__(self, render=False):
@@ -33,7 +32,6 @@ class CartPoleEnv(gymnasium.Env):
         p.resetSimulation()
         p.setGravity(0, 0, -9.81)
         p.loadURDF("plane.urdf")
-
         
 
          # Get the absolute path to the urdf directory

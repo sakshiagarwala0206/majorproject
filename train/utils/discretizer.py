@@ -1,7 +1,7 @@
 import numpy as np
 
 def create_bins(low, high, bins):
-    return [np.linspace(l, h, bins - 1) for l, h in zip(low, high)]
+    return [np.linspace(l, h, b - 1) for l, h, b in zip(low, high, bins)]
 
 def discretize(obs, bins, obs_low, obs_high):
     obs = np.clip(obs, obs_low, obs_high)

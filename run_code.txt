@@ -1,2 +1,7 @@
 python train/train_rl.py --config configs/qlearning.yaml
 
+python test.py --config config/qlearning_test.yaml --model_path logs/training_metadata.pkl --controller_type qlearning --use_wandb
+
+python test_dqn.py --config ./config/dqn.yaml --model_path models/model.zip --use_wandb
+
+python test_dqn.py --config config/dqn.yaml --model_path models/dqn/model.zip --model_type DQN --use_wandb

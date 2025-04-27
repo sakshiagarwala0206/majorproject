@@ -5,12 +5,11 @@ import pybullet as p
 import pybullet_data
 import os
 
-class CartPoleEnv(gymnasium.Env):
-    metadata = {"render_modes": ["human", "rgb_array"]}
-    def __init__(self, render_mode=None):
-        super(CartPoleEnv, self).__init__()
-        self.render_mode = render_mode
-        if self.render_mode == "human":
+class CartPoleBaseEnv(gymnasium.Env):
+    def __init__(self, render=False):
+        super(CartPoleBaseEnv, self).__init__()
+        self.render_mode = render
+        if self.render_mode:
             p.connect(p.GUI)
         else:
             p.connect(p.DIRECT)
@@ -20,13 +19,6 @@ class CartPoleEnv(gymnasium.Env):
         p.setTimeStep(self.time_step)
 
         self.cartpole_id = None
-
-        # Discrete actions: 0 = left, 1 = right
-        self.action_space = spaces.Discrete(2)
-
-        # Observation: [pole_angle, pole_velocity, cart_position, cart_velocity]
-        obs_high = np.array([np.pi, np.inf, np.inf, np.inf], dtype=np.float32)
-        self.observation_space = spaces.Box(-obs_high, obs_high, dtype=np.float32)
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
@@ -51,20 +43,7 @@ class CartPoleEnv(gymnasium.Env):
         return self._get_obs(), {}
 
     def step(self, action):
-        torque = 10.0 if action == 1 else -10.0  # Right or Left  #torque value is over here
-
-        # Only apply torque to the cart joint
-        p.setJointMotorControl2(self.cartpole_id, 0, p.TORQUE_CONTROL, force=torque)
-        p.setJointMotorControl2(self.cartpole_id, 1, p.TORQUE_CONTROL, force=0.0)
-
-        p.stepSimulation()
-
-        obs = self._get_obs()
-        reward = self._get_reward(obs)
-        terminated = self._is_done(obs)
-        truncated = False
-
-        return obs, reward, terminated, truncated, {}
+        raise NotImplementedError("step() must be implemented in subclasses")
 
     def _get_obs(self):
         cart_state = p.getJointState(self.cartpole_id, 0)
@@ -88,3 +67,44 @@ class CartPoleEnv(gymnasium.Env):
 
     def close(self):
         p.disconnect()
+
+class CartPoleDiscreteEnv(CartPoleBaseEnv):
+    def __init__(self, render=False):
+        super(CartPoleDiscreteEnv, self).__init__(render)
+        self.action_space = spaces.Discrete(2)  # Actions: 0 = left, 1 = right
+
+    def step(self, action):
+        torque = 10.0 if action == 1 else -10.0  # Apply torque based on discrete action (left or right)
+
+        p.setJointMotorControl2(self.cartpole_id, 0, p.TORQUE_CONTROL, force=torque)
+        p.setJointMotorControl2(self.cartpole_id, 1, p.TORQUE_CONTROL, force=0.0)
+
+        p.stepSimulation()
+
+        obs = self._get_obs()
+        reward = self._get_reward(obs)
+        terminated = self._is_done(obs)
+        truncated = False
+
+        return obs, reward, terminated, truncated, {}
+
+class CartPoleContinuousEnv(CartPoleBaseEnv):
+    def __init__(self, render=False):
+        super(CartPoleContinuousEnv, self).__init__(render)
+        self.action_space = spaces.Box(low=np.array([-5.0, -5.0]), high=np.array([5.0, 5.0]), dtype=np.float32)
+
+    def step(self, action):
+        cart_torque = float(action[0])
+        pole_torque = float(action[1])
+
+        p.setJointMotorControl2(self.cartpole_id, 0, p.TORQUE_CONTROL, force=cart_torque)
+        p.setJointMotorControl2(self.cartpole_id, 1, p.TORQUE_CONTROL, force=pole_torque)
+
+        p.stepSimulation()
+
+        obs = self._get_obs()
+        reward = self._get_reward(obs)
+        terminated = self._is_done(obs)
+        truncated = False
+
+        return obs, reward, terminated, truncated, {}
