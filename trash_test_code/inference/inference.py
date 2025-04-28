@@ -4,7 +4,7 @@ import torch
 import numpy as np
 from stable_baselines3 import DDPG
 from stable_baselines3.common.noise import NormalActionNoise
-from environments.pendulum_env import InvertedPendulumEnv  
+from trash_test_code.pendulum_env import InvertedPendulumEnv  
 import os# import your custom env
 from environments.cartpole_env import CartPoleEnv
 

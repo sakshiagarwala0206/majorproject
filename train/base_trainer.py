@@ -8,6 +8,7 @@ from stable_baselines3.common.callbacks import CheckpointCallback
 from stable_baselines3.common.monitor import Monitor
 from wandb.integration.sb3 import WandbCallback
 from datetime import datetime
+from train.utils.callbacks import CustomCallback 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 
 from train.utils.logger import setup_logger
@@ -79,7 +80,13 @@ class BaseTrainer:
             model_save_path=f"./models/{self.algo_name.lower()}/",
             verbose=2,
         )
-        return [checkpoint_callback, wandb_callback]
+
+        custom_callback = CustomCallback(
+        convergence_threshold=0.5,
+        window_size=20,
+        )
+        self.custom_callback = custom_callback
+        return [checkpoint_callback, wandb_callback,custom_callback]
     
     
 
