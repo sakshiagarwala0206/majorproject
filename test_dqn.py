@@ -14,7 +14,7 @@ import random
 # 📁 Add root for custom modules
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), './')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
-from environments.cartpole_rl import CartPoleEnv
+from environments.cartpole import CartPoleDiscreteEnv
 from controllers.drl_controller import DRLController
 from train.utils.logger import setup_logger
 from stable_baselines3 import DQN
@@ -23,7 +23,7 @@ logger = setup_logger()
 # ✅ Register environment
 register(
     id='CartPole-v1',
-    entry_point='environments.cartpole_rl:CartPoleEnv',
+    entry_point='environments.cartpole:CartPoleDiscreteEnv',
 )
 
 # 🧾 Config loader
@@ -66,14 +66,14 @@ def get_robustness(performances):
     return np.std(performances)
 
 # 🧪 Evaluation loop
-def evaluate_controller(env, controller, num_episodes, max_steps,epsilon=0.1):
+def evaluate_controller(env, controller, num_episodes, max_steps,epsilon_start=1.0, epsilon_min=0.7, epsilon_decay=0.999):
     rewards = []
     overshoots = []
     settling_times = []
     fall_count = 0
     energy = []
     smoothness = []
-
+    epsilon = epsilon_start
     for episode in range(num_episodes):
         obs, _ = env.reset(seed=episode)
         total_reward = 0
@@ -108,6 +108,8 @@ def evaluate_controller(env, controller, num_episodes, max_steps,epsilon=0.1):
         settling_times.append(get_settling_time(episode_times, episode_angles))
         energy.append(get_energy(episode_torques))
         smoothness.append(get_smoothness(episode_angles, episode_times))
+
+        epsilon = max(epsilon_min, epsilon * epsilon_decay)
 
     convergence_time = get_convergence_time(rewards)
     avg_reward = get_avg_reward(rewards)
@@ -168,7 +170,14 @@ if __name__ == "__main__":
         table = wandb.Table(columns=["Episode", "Reward", "Overshoot", "Settling Time", "Energy", "Smoothness"])
         for ep in range(config.eval_episodes):
             table.add_data(ep, rewards[ep], overshoots[ep], settling_times[ep], energy[ep], smoothness[ep])
-
+            wandb.log({
+                "episode": ep,
+                "reward": rewards[ep],
+                "smoothness": smoothness[ep],
+                "settling_time": settling_times[ep],
+                "overshoot": overshoots[ep],
+                "Step": ep,  # <-- very important
+            })
         wandb.log({
             "mean_reward": mean_reward,
             **metrics,

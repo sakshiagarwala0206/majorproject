@@ -2,15 +2,17 @@ import os
 import sys
 from stable_baselines3 import DQN
 
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
 
 from train.base_trainer import BaseTrainer
 from train.utils.logger import setup_logger
+import environments.cartpole
 
 logger = setup_logger()
 import argparse
 from train.utils.config_loader import load_config
-
+import gymnasium as gym
+from gymnasium.envs.registration import register
 # Parse command-line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--config', type=str, required=True, help='Path to config file')
@@ -27,10 +29,12 @@ print(config)
 # trainer.train()
 controller_name = "DQN"
 config_name = "EpsDecay_0.99"
-
-
-
-
+# Register Discrete CartPole
+register(
+    id="CartPole-v1",
+    entry_point="environments.cartpole:CartPoleDiscreteEnv",
+    max_episode_steps=500,  # same as Gym CartPole
+)
 def main():
     trainer = BaseTrainer(
         algo_name="DQN",
