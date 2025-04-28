@@ -15,7 +15,7 @@ from gymnasium.envs.registration import register
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
 # Import custom environment
-from environments.cartpole_env import CartPoleEnv
+from trash_test_code.cartpole_env import CartPoleEnv
 
 # 📝 Logging config
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')

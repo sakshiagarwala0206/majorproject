@@ -4,7 +4,7 @@ import numpy as np
 from stable_baselines3 import DDPG
 from stable_baselines3.common.noise import NormalActionNoise
 
-from environments.cartpole_env import InvertedPendulumEnvGymnasium  # 🔄 Your custom environment class
+from trash_test_code.cartpole_env import InvertedPendulumEnvGymnasium  # 🔄 Your custom environment class
 from gymnasium.envs.registration import register
 import os
 import sys

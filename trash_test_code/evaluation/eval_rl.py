@@ -11,7 +11,7 @@ from gymnasium.envs.registration import register
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
 # ✅ Import and register your custom environment
-from environments.cartpole_rl import CartPoleEnv
+from trash_test_code.cartpole_rl import CartPoleEnv
 
 register(
     id='CartPole-v1',

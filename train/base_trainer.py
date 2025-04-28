@@ -9,12 +9,41 @@ from stable_baselines3.common.monitor import Monitor
 from wandb.integration.sb3 import WandbCallback
 from datetime import datetime
 from train.utils.callbacks import CustomCallback 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
+from stable_baselines3.common.callbacks import BaseCallback
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
+import numpy as np
 from train.utils.logger import setup_logger
 from train.utils.config_loader import load_config
 
 logger = setup_logger()
+class StopTrainingOnPatience(BaseCallback):
+    def __init__(self, min_improvement: float = 1.0, patience: int = 10):
+        super().__init__()
+        self.min_improvement = min_improvement
+        self.patience = patience
+        self.patience_counter = 0
+        self.last_reward = -float('inf')
+
+    def _on_step(self) -> bool:
+        # Calculate the current reward improvement
+        current_reward = self.locals["rewards"][-1]  # Get the last reward
+        reward_improvement = abs(self.last_reward - current_reward)
+
+        # Check if the improvement is less than the minimum improvement
+        if reward_improvement < self.min_improvement:
+            self.patience_counter += 1
+        else:
+            self.patience_counter = 0
+
+        self.last_reward = current_reward
+
+        # Stop training if patience limit is reached
+        if self.patience_counter >= self.patience:
+            print(f"Training stopped due to no significant improvement for {self.patience} episodes.")
+            return False  # This will stop training
+
+        return True  # Continue training
 
 class BaseTrainer:
     def __init__(self, algo_name: str, config: dict, env_id: str):
@@ -68,16 +97,19 @@ class BaseTrainer:
         )
 
     def get_callbacks(self):
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        name_prefix = f"{self.algo_name.lower()}_{timestamp}"
         checkpoint_callback = CheckpointCallback(
             save_freq=10_000,
-            save_path=f"./models/{self.algo_name.lower()}/",
+            save_path=f"./models/{self.algo_name.lower()}/{timestamp}/",
             name_prefix=f"{self.algo_name.lower()}_cartpole",
             save_replay_buffer=True,
             save_vecnormalize=True,
         )
         wandb_callback = WandbCallback(
             gradient_save_freq=100,
-            model_save_path=f"./models/{self.algo_name.lower()}/",
+            model_save_path=f"./models/{self.algo_name.lower()}/{timestamp}/",
             verbose=2,
         )
 
@@ -85,9 +117,14 @@ class BaseTrainer:
         convergence_threshold=0.5,
         window_size=20,
         )
+        # Add the new StopTrainingOnRewardThreshold callback here
+        # Add the StopTrainingOnPatience callback here
+        # Here you can return your custom StopTrainingOnPatience callback along with other callbacks
+        
+        patience_callback = StopTrainingOnPatience(min_improvement=1.0, patience=20000)
         self.custom_callback = custom_callback
-        return [checkpoint_callback, wandb_callback,custom_callback]
-    
+        return [checkpoint_callback, wandb_callback,custom_callback, patience_callback]
+
     
 
     def generate_experiment_id(controller_name, config_name):

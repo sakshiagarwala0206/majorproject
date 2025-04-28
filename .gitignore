@@ -47,3 +47,5 @@ __pycache__/
 *.egg
 *.egg-info/
 __pycache__/
+models/
+dqn_tesnorboard/

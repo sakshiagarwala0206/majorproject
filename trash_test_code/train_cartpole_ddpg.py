@@ -16,7 +16,7 @@ from gymnasium.envs.registration import register
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
 # Now you can import the environment
-from environments.cartpole_env import CartPoleEnv  # Import the CartPoleEnv class
+from trash_test_code.cartpole_env import CartPoleEnv  # Import the CartPoleEnv class
 
 # 📝 Logging config
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')

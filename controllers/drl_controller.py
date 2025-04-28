@@ -30,18 +30,19 @@ class DRLController:
                 q_values, _ = self.model.predict(observation_tensor, deterministic=True)
                 action = q_values  # This should be a single action, as DQN predicts a discrete action
 
-            elif self.model_type == 'ddpg' or self.model_type == 'sac':  # Continuous action space
+            elif self.model_type.lower() == 'ddpg' or self.model_type == 'sac':  # Continuous action space
                 # For DDPG/SAC, directly predict actions (continuous)
-                action = self.model(observation_tensor)
-                action = action.squeeze(0).cpu().numpy()  # Remove batch dimension and convert to numpy
+                action, _ = self.model.predict(observation_tensor,deterministic=True)
+                # action = action.squeeze(0).cpu().numpy()  # Remove batch dimension and convert to numpy
+                action = np.squeeze(action)  # Remove batch dimension (if any)
 
                 # Ensure the action is within bounds (optional but recommended for continuous spaces)
                 if isinstance(self.action_space, np.ndarray):
                     action = np.clip(action, self.action_space.low, self.action_space.high)
 
-            elif self.model_type == 'ppo':  # Discrete or continuous action space
+            elif self.model_type.lower() == 'ppo':  # Discrete or continuous action space
                 # For PPO, select action from a distribution
-                action_distribution = self.model(observation_tensor)
+                action_distribution = self.model.predict(observation_tensor)
                 action = action_distribution.sample().cpu().numpy()
 
             else:

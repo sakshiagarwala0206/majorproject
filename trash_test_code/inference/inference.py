@@ -6,7 +6,7 @@ from stable_baselines3 import DDPG
 from stable_baselines3.common.noise import NormalActionNoise
 from trash_test_code.pendulum_env import InvertedPendulumEnv  
 import os# import your custom env
-from environments.cartpole_env import CartPoleEnv
+from trash_test_code.cartpole_env import CartPoleEnv
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), './'))  # Going to project root
 model_path= os.path.join(project_root, "ddpg_inverted_pendulum.zip")

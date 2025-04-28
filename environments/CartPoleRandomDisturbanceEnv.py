@@ -7,8 +7,6 @@ import os
 
 class CartPoleBaseEnv(gymnasium.Env):
     metadata = {"render_modes": ["human", "rgb_array"]}
-    
-    # Class-level flag for GUI connection
     gui_connected = False
 
     def __init__(self, render_mode=None, test_mode=False):
@@ -16,17 +14,17 @@ class CartPoleBaseEnv(gymnasium.Env):
         self.render_mode = render_mode
         self.viewer = None
         self.render_fps = 60
-        self.test_mode = test_mode  # Add test mode flag
+        self.test_mode = test_mode
 
         if self.render_mode:
-            if not CartPoleBaseEnv.gui_connected:  # Connect only once
+            if not CartPoleBaseEnv.gui_connected:
                 p.connect(p.GUI)
                 p.configureDebugVisualizer(p.COV_ENABLE_MOUSE_PICKING, 1)
                 CartPoleBaseEnv.gui_connected = True
             else:
-                p.connect(p.DIRECT)  # For other environments, use DIRECT mode
+                p.connect(p.DIRECT)
         else:
-            p.connect(p.DIRECT)  # Non-GUI mode
+            p.connect(p.DIRECT)
 
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         self.time_step = 1.0 / 240.0
@@ -34,10 +32,8 @@ class CartPoleBaseEnv(gymnasium.Env):
 
         self.cartpole_id = None
         self.current_step = 0
-        self.disturbance_step = None
-        self.disturbed = False
-        self.steps_after_disturbance = 0
-        self.reward_after_disturbance = 0.0
+        self.disturbance_frequency = 200  # Disturb every 200 steps
+        self.disturbance_magnitude = 5.0
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
@@ -50,7 +46,7 @@ class CartPoleBaseEnv(gymnasium.Env):
 
         if not os.path.exists(urdf_path):
             raise FileNotFoundError(f"URDF file not found at {urdf_path}")
-    
+
         self.cartpole_id = p.loadURDF(urdf_path, basePosition=[0, 0, 0.1])
 
         p.setJointMotorControl2(self.cartpole_id, 0, p.VELOCITY_CONTROL, force=0)
@@ -60,29 +56,12 @@ class CartPoleBaseEnv(gymnasium.Env):
             p.stepSimulation()
 
         self.current_step = 0
-        self.disturbed = False
-        self.steps_after_disturbance = 0
-        self.reward_after_disturbance = 0.0
-
-        if self.test_mode:
-            # Set when disturbance will happen during test (fixed/random)
-            self.disturbance_step = np.random.randint(100, 300)
-
-        if self.render_mode:
-            p.configureDebugVisualizer(p.COV_ENABLE_MOUSE_PICKING, 1)  # Allow manual disturbance
 
         return self._get_obs(), {}
 
-    def disturb_pole(self, method="torque", torque_magnitude=5.0, angle_range=0.1):
-        if method == "torque":
-            random_torque = np.random.uniform(-torque_magnitude, torque_magnitude)
-            p.setJointMotorControl2(self.cartpole_id, 1, p.TORQUE_CONTROL, force=random_torque)
-        elif method == "tilt":
-            random_angle = np.random.uniform(-angle_range, angle_range)
-            current_velocity = p.getJointState(self.cartpole_id, 1)[1]
-            p.resetJointState(self.cartpole_id, 1, random_angle, current_velocity)
-        else:
-            raise ValueError("Unknown disturbance method: choose 'torque' or 'tilt'")
+    def _random_disturb_pole(self):
+        random_torque = np.random.uniform(-self.disturbance_magnitude, self.disturbance_magnitude)
+        p.setJointMotorControl2(self.cartpole_id, 1, p.TORQUE_CONTROL, force=random_torque)
 
     def _get_obs(self):
         cart_state = p.getJointState(self.cartpole_id, 0)
@@ -98,7 +77,6 @@ class CartPoleBaseEnv(gymnasium.Env):
     def _get_reward(self, obs):
         pole_angle = obs[0]
         cart_velocity = obs[3]
-        # return 1.0 - (abs(pole_angle) / np.pi)
         return -abs(pole_angle) - 0.1 * abs(cart_velocity)
 
     def _is_done(self, obs):
@@ -109,20 +87,18 @@ class CartPoleBaseEnv(gymnasium.Env):
     def close(self):
         p.disconnect()
 
-class CartPoleDiscreteEnv(CartPoleBaseEnv):
-    metadata = {"render_modes": ["human", "rgb_array"]}
-    
+class CartPoleRandomDisturbanceDiscreteEnv(CartPoleBaseEnv):
     def __init__(self, render_mode=False, test_mode=False):
         super().__init__(render_mode=render_mode, test_mode=test_mode)
-        self.action_space = spaces.Discrete(2)  # Actions: 0 = left, 1 = right
+        self.action_space = spaces.Discrete(2)
         self.observation_space = spaces.Box(
             low=np.array([-np.pi, -np.inf, -np.inf, -np.inf], dtype=np.float32),
             high=np.array([np.pi, np.inf, np.inf, np.inf], dtype=np.float32),
             dtype=np.float32
         )
-        
+
     def step(self, action):
-        torque = 10.0 if action == 1 else -10.0  # Apply torque based on discrete action (left or right)
+        torque = 10.0 if action == 1 else -10.0
 
         p.setJointMotorControl2(self.cartpole_id, 0, p.TORQUE_CONTROL, force=torque)
         p.setJointMotorControl2(self.cartpole_id, 1, p.TORQUE_CONTROL, force=0.0)
@@ -131,26 +107,17 @@ class CartPoleDiscreteEnv(CartPoleBaseEnv):
 
         self.current_step += 1
 
-        # Apply disturbance if in test mode and correct step
-        if self.test_mode and self.current_step == self.disturbance_step:
-            self.disturb_pole(method="torque")
+        if self.current_step % self.disturbance_frequency == 0:
+            self._random_disturb_pole()
 
         obs = self._get_obs()
         reward = self._get_reward(obs)
         terminated = self._is_done(obs)
         truncated = False
 
-        # Record metrics after disturbance
-        if self.test_mode and self.current_step >= self.disturbance_step:
-            self.disturbed = True
-
-        if self.disturbed:
-            self.steps_after_disturbance += 1
-            self.reward_after_disturbance += reward
-
         return obs, reward, terminated, truncated, {}
 
-class CartPoleContinuousEnv(CartPoleBaseEnv):
+class CartPoleRandomDisturbanceContinuousEnv(CartPoleBaseEnv):
     def __init__(self, render_mode=False, test_mode=False):
         super().__init__(render_mode=render_mode, test_mode=test_mode)
         self.action_space = spaces.Box(low=np.array([-5.0, -5.0]), high=np.array([5.0, 5.0]), dtype=np.float32)
@@ -159,7 +126,7 @@ class CartPoleContinuousEnv(CartPoleBaseEnv):
             high=np.array([np.pi, np.inf, np.inf, np.inf], dtype=np.float32),
             dtype=np.float32
         )
-        
+
     def step(self, action):
         cart_torque = float(action[0])
         pole_torque = float(action[1])
@@ -171,21 +138,12 @@ class CartPoleContinuousEnv(CartPoleBaseEnv):
 
         self.current_step += 1
 
-        # Apply disturbance if in test mode and correct step
-        if self.test_mode and self.current_step == self.disturbance_step:
-            self.disturb_pole(method="torque")
+        if self.current_step % self.disturbance_frequency == 0:
+            self._random_disturb_pole()
 
         obs = self._get_obs()
         reward = self._get_reward(obs)
         terminated = self._is_done(obs)
         truncated = False
-
-        # Record metrics after disturbance
-        if self.test_mode and self.current_step >= self.disturbance_step:
-            self.disturbed = True
-
-        if self.disturbed:
-            self.steps_after_disturbance += 1
-            self.reward_after_disturbance += reward
 
         return obs, reward, terminated, truncated, {}

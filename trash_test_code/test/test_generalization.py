@@ -10,7 +10,7 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
 # Import the custom CartPoleEnv class
-from environments.cartpole_env import CartPoleEnv
+from trash_test_code.cartpole_env import CartPoleEnv
 from gymnasium.envs.registration import register
 from stable_baselines3.common.logger import configure
 

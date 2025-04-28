@@ -7,3 +7,15 @@ python test_dqn.py --config ./config/dqn.yaml --model_path models/model.zip --us
 python test_dqn.py --config config/dqn.yaml --model_path models/dqn/model.zip --model_type DQN --use_wandb
 
 python train/ddpg_trainer.py --config config/ddpg.yaml
+
+python test_ddpg.py --config config/ddpg.yaml --model_path models/ddpg/ddpg_cartpole_150000_steps.zip --model_type DDPG --use_wandb
+
+
+python test_ddpg.py --config config/ddpg.yaml --model_path models/ddpg/20250428_214901/model.zip --model_type DDPG --use_wandb
+
+python train/sac_trainer.py --config config/sac.yaml
+
+python train/sac_trainer.py --config config/sac_01.yaml
+
+python test_ddpg.py --config config/sac.yaml --model_path models/sac/20250428_224316/model.zip --model_type sac --use_wandb
+
