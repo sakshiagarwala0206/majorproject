@@ -1,7 +1,7 @@
 import os
 import sys
 from stable_baselines3 import DDPG
-
+from stable_baselines3.common.noise import NormalActionNoise
 
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
@@ -12,6 +12,7 @@ import argparse
 from train.utils.config_loader import load_config
 import gymnasium as gym
 from gymnasium.envs.registration import register
+import numpy as np
 import environments.cartpole
 logger = setup_logger()
 # Parse command-line arguments
@@ -31,18 +32,26 @@ register(
     max_episode_steps=500,  # same as Gym CartPole
 )
 
+# Define the initial noise parameters
+initial_noise = 0.5      # Starting noise level
+decay_rate = 0.995       # Rate at which the noise decays
+min_noise = 0.05        # Minimum noise level
+
 def main():
     trainer = BaseTrainer(
         algo_name="DDPG",
         config=config,
         env_id="CartPole-v1",
     )
+    # Extract the environment's action space shape to define the action noise
+    action_space_shape = trainer.env.action_space.shape
+    action_noise = NormalActionNoise(mean=np.zeros(action_space_shape), sigma=np.ones(action_space_shape) * initial_noise)
 
     model = DDPG(
         policy=trainer.wandb_config.policy,
         env=trainer.env,
         verbose=1,
-        action_noise=trainer.action_noise,
+        action_noise=action_noise,
         learning_rate=float(trainer.wandb_config.learning_rate),
         gamma=trainer.wandb_config.gamma,
         tau=trainer.wandb_config.tau,
