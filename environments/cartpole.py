@@ -161,8 +161,20 @@ class CartPoleContinuousEnv(CartPoleBaseEnv):
         )
         
     def step(self, action):
-        cart_torque = float(action[0])
-        pole_torque = float(action[1])
+        # if isinstance(action, np.ndarray):
+        #     action = float(action.item())  # Correctly converts np.array([x]) -> float x
+        # else:
+        #     action = float(action)  # Already float
+        # 1) Always coerce to a flat numpy array:
+        action_arr = np.array(action, dtype=float).flatten()
+    # 2) Now safely extract both torques:
+        cart_torque  = float(action_arr[0])
+        pole_torque  = float(action_arr[1])
+
+
+        # cart_torque = action
+        
+        # pole_torque = float(action[1])
 
         p.setJointMotorControl2(self.cartpole_id, 0, p.TORQUE_CONTROL, force=cart_torque)
         p.setJointMotorControl2(self.cartpole_id, 1, p.TORQUE_CONTROL, force=pole_torque)

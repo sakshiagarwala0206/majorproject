@@ -46,15 +46,21 @@ class StopTrainingOnPatience(BaseCallback):
         return True  # Continue training
 
 class BaseTrainer:
-    def __init__(self, algo_name: str, config: dict, env_id: str):
+    def __init__(self, algo_name: str, config: dict, env_id: str,run_name=None):
         self.algo_name = algo_name
         self.config = config
         self.env_id = env_id
 
+        
+        if run_name is None:
+            self.run_name = f"train_{self.algo_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        else:
+            self.run_name = run_name
+
         self._init_wandb()
         self.env = self._init_env()
         self.action_noise = self._init_noise()
-
+            
     def _init_wandb(self):
         wandb.init(
             project="assistive-walker-drl",
@@ -62,6 +68,7 @@ class BaseTrainer:
             sync_tensorboard=True,
             monitor_gym=True,
             save_code=True,
+            name=self.run_name,
         )
         self.wandb_config = wandb.config
 
@@ -121,7 +128,7 @@ class BaseTrainer:
         # Add the StopTrainingOnPatience callback here
         # Here you can return your custom StopTrainingOnPatience callback along with other callbacks
         
-        patience_callback = StopTrainingOnPatience(min_improvement=1.0, patience=20000)
+        patience_callback = StopTrainingOnPatience(min_improvement=1.0, patience=200000)
         self.custom_callback = custom_callback
         return [checkpoint_callback, wandb_callback,custom_callback, patience_callback]
 

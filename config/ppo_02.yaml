@@ -1,0 +1,19 @@
+
+policy: "MlpPolicy"             # MLP policy
+learning_rate: 0.0005           # Learning rate
+gamma: 0.98                     # Discount factor
+tau: 0.95                       # GAE decay
+batch_size: 256                 # Larger batch size for faster convergence
+buffer_size: 1000000            # Buffer size
+train_freq: 8                   # Training frequency
+gradient_steps: 4               # Gradient steps per update
+total_timesteps: 5000000        # Total timesteps for training
+policy_kwargs:
+    net_arch: [512, 512, 256]     # Larger network with more layers and neurons
+seed: 42                         # Random seed for reproducibility
+tensorboard_log: "./ppo_tensorboard/"
+eval_episodes: 1000              # Number of episodes for evaluation
+max_steps: 1000                 # Max steps per episode
+use_sde: True                   # Use SDE (State Dependent Exploration)
+sde_sample_freq: 4              # Sample frequency for SDE
+#PPO with Custom Policy and Larger Model

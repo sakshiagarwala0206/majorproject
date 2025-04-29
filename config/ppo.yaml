@@ -1,7 +1,15 @@
-policy: "MlpPolicy"
-learning_rate: 3e-4
-gamma: 0.99
-n_steps: 2048
-batch_size: 64
-n_epochs: 10
-total_timesteps: 500_000
+policy: "MlpPolicy"             # Use MLP (Multilayer Perceptron) policy for the model
+learning_rate: 0.0003          # The learning rate for PPO
+gamma: 0.99                    # Discount factor for future rewards
+tau: 0.95                       # GAE (Generalized Advantage Estimation) decay factor
+batch_size: 64                 # Batch size used for training
+buffer_size: 1000000           # Size of the replay buffer
+train_freq: 4                 # How often to train the model
+gradient_steps: 4             # Number of gradient steps per update
+total_timesteps: 1000000      # Total timesteps for training
+policy_kwargs:
+net_arch: [64, 64]          # Network architecture (2 hidden layers with 64 neurons each)
+seed: 42                       # Random seed for reproducibility
+tensorboard_log: "./ppo_tensorboard/"  # Directory for tensorboard logs
+eval_episodes: 1000            # Number of episodes for evaluation
+max_steps: 200                # Maximum number of steps per episode

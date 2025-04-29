@@ -6,16 +6,17 @@ python test_dqn.py --config ./config/dqn.yaml --model_path models/model.zip --us
 
 python test_dqn.py --config config/dqn.yaml --model_path models/dqn/model.zip --model_type DQN --use_wandb
 
-python train/ddpg_trainer.py --config config/ddpg.yaml
 
-python test_ddpg.py --config config/ddpg.yaml --model_path models/ddpg/ddpg_cartpole_150000_steps.zip --model_type DDPG --use_wandb
+1. python test_ddpg.py --config config/ddpg.yaml --model_path models/ddpg/20250428_214901/model.zip --model_type DDPG --use_wandb
 
+2. python test_sac.py --config config/sac.yaml --model_path models/sac/20250428_225634/model.zip --model_type SAC --use_wandb
 
-python test_ddpg.py --config config/ddpg.yaml --model_path models/ddpg/20250428_214901/model.zip --model_type DDPG --use_wandb
+3. python train/ddpg_trainer.py --config config/ddpg_01.yaml
 
-python train/sac_trainer.py --config config/sac.yaml
+4. python train/ppo_trainer.py --config config/ppo.yaml
 
-python train/sac_trainer.py --config config/sac_01.yaml
+5. python train/ppo_trainer.py --config config/ppo_01.yaml
 
-python test_ddpg.py --config config/sac.yaml --model_path models/sac/20250428_224316/model.zip --model_type sac --use_wandb
+6. python test/test_ppo.py --config config/ppo_01.yaml --model_path models/ppo/20250429_030115/model.zip --use_wandb
 
+7. . python test/test_ddpg.py --config config/ddpg_01.yaml --model_path models/ddpg/20250429_014219/model.zip --model_type DDPG --use_wandb
