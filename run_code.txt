@@ -17,6 +17,18 @@ python test_dqn.py --config config/dqn.yaml --model_path models/dqn/model.zip --
 
 5. python train/ppo_trainer.py --config config/ppo_01.yaml
 
-6. python test/test_ppo.py --config config/ppo_01.yaml --model_path models/ppo/20250429_030115/model.zip --use_wandb
+6. python test/test_ppo.py --config config/ppo_01.yaml --model_path models/ppo/20250429_030430/model.zip --use_wandb
 
 7. . python test/test_ddpg.py --config config/ddpg_01.yaml --model_path models/ddpg/20250429_014219/model.zip --model_type DDPG --use_wandb
+
+python test/test_ppo.py --config config/ppo_02.yaml --model_path models/ppo/20250429_030430/model.zip --use_wandb
+
+python train/ppo_walker.py --config config/waker_ppo.yaml 
+
+
+python test/test_walker_ppo.py --config config/waker_ppo.yaml --model_path models/ppo/ppo_20250430_182643_final.zip --use_wandb
+
+python test/mouse_test.py --model_path models/ppo/ppo_20250430_182643_final.zip
+
+
+python balance-robot-mujoco-rl/src/sb_rl.py -a PPO train -e Env01-v2

@@ -1,11 +1,11 @@
-import gymnasium
+import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
 import pybullet as p
 import pybullet_data
 import os
 
-class InclinedCartPoleBaseEnv(gymnasium.Env):
+class InclinedCartPoleBaseEnv(gym.Env):
     metadata = {"render_modes": ["human", "rgb_array"]}
     gui_connected = False
 
@@ -37,7 +37,7 @@ class InclinedCartPoleBaseEnv(gymnasium.Env):
         p.setGravity(0, 0, -9.81)
 
         # Load an inclined plane
-        plane_id = p.loadURDF("plane.urdf", baseOrientation=p.getQuaternionFromEuler([0, self.incline_angle, 0]))
+        p.loadURDF("plane.urdf", baseOrientation=p.getQuaternionFromEuler([0, self.incline_angle, 0]))
 
         # Load the cartpole on inclined surface
         project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))
@@ -60,12 +60,34 @@ class InclinedCartPoleBaseEnv(gymnasium.Env):
         cart_position, cart_velocity = cart_state[0], cart_state[1]
         pole_state = p.getJointState(self.cartpole_id, 1)
         pole_angle, pole_velocity = pole_state[0], pole_state[1]
+        # self.logger.record('rollout/pole_angle', pole_angle)
+        # self.logger.record('rollout/reward', self._get_reward([pole_angle, pole_velocity, cart_position, cart_velocity]))
         return np.array([pole_angle, pole_velocity, cart_position, cart_velocity], dtype=np.float32)
 
     def _get_reward(self, obs):
-        pole_angle = obs[0]
-        cart_velocity = obs[3]
-        return -abs(pole_angle) - 0.1 * abs(cart_velocity)
+        cart_pos, cart_vel, pole_angle, pole_vel = obs
+        reward = 0.0
+        # Normalize for gentle scaling
+        pole_angle_penalty = (pole_angle / self.max_pole_angle) ** 2
+        pole_velocity_penalty = (pole_vel / self.max_pole_vel) ** 2
+        cart_pos_penalty = (cart_pos / self.max_cart_pos) ** 2
+
+        # Weighted combination
+        reward = 1.0 \
+             - 0.5 * pole_angle_penalty \
+             - 0.3 * pole_velocity_penalty \
+             - 0.2 * cart_pos_penalty
+
+    # # Optional: clip or zero out if episode ends
+    # if abs(pole_angle) > self.max_pole_angle:
+    #     reward = -10.0  # heavy penalty for falling
+    
+    # # Bonus for keeping the pole near upright
+    #     if abs(pole_angle) < 0.1:
+    #         reward += 1  # Small positive reward for staying upright
+    
+        return reward
+    
 
     def _is_done(self, obs):
         pole_angle = obs[0]
@@ -84,6 +106,7 @@ class InclinedCartPoleDiscreteEnv(InclinedCartPoleBaseEnv):
             high=np.array([np.pi, np.inf, np.inf, np.inf], dtype=np.float32),
             dtype=np.float32
         )
+        self.max_pole_angle = np.deg2rad(15)  # or another value that makes sense
 
     def step(self, action):
         torque = 10.0 if action == 1 else -10.0
@@ -108,6 +131,9 @@ class InclinedCartPoleContinuousEnv(InclinedCartPoleBaseEnv):
             high=np.array([np.pi, np.inf, np.inf, np.inf], dtype=np.float32),
             dtype=np.float32
         )
+        self.max_pole_angle = np.deg2rad(15)  # or another value that makes sense
+        self.max_pole_vel = 10.0  
+        self.max_cart_pos = 2.4
 
     def step(self, action):
         cart_torque = float(action[0])

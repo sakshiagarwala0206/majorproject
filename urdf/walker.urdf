@@ -1,0 +1,226 @@
+<?xml version="1.0"?>
+<robot name="walker_balance_optimized">
+
+  <!-- Torso -->
+  <link name="torso">
+    <visual>
+      <geometry>
+        <box size="0.22 0.08 0.171"/>
+      </geometry>
+      <origin xyz="0 0 0.0995"/>
+      <material name="gray">
+        <color rgba="0.5 0.5 0.5 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.22 0.08 0.171"/>
+      </geometry>
+      <origin xyz="0 0 0.0995"/>
+    </collision>
+    <inertial>
+      <mass value="3.5"/>
+      <origin xyz="0 0 0.085"/>
+      <inertia ixx="0.0104" iyy="0.0226" izz="0.0160"
+               ixy="0.0" ixz="0.0" iyz="0.0"/>
+    </inertial>
+  </link>
+
+  <!-- Left Wheel -->
+  <link name="l_wheel">
+    <visual>
+      <geometry><cylinder radius="0.05" length="0.035"/></geometry>
+      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
+      <material name="black">
+        <color rgba="0.1 0.1 0.1 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry><cylinder radius="0.05" length="0.035"/></geometry>
+      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
+    </collision>
+    <inertial>
+      <mass value="0.06"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="4.36e-05" iyy="4.36e-05" izz="4.5e-5"/>
+    </inertial>
+  </link>
+
+  <!-- Right Wheel -->
+  <link name="r_wheel">
+    <visual>
+      <geometry><cylinder radius="0.05" length="0.035"/></geometry>
+      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
+    </visual>
+    <collision>
+      <geometry><cylinder radius="0.05" length="0.035"/></geometry>
+      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
+    </collision>
+    <inertial>
+      <mass value="0.06"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="3.0e-05" iyy="3.0e-05" izz="4.5e-05"/>
+    </inertial>
+  </link>
+
+  <!-- Balancing Pole -->
+  <link name="pole">
+    <visual>
+      <geometry><box size="0.03 0.03 0.7"/></geometry>
+      <origin xyz="0 0 0.35"/>
+      <material name="blue">
+        <color rgba="0.2 0.2 0.8 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry><box size="0.03 0.03 0.7"/></geometry>
+      <origin xyz="0 0 0.35"/>
+    </collision>
+    <inertial>
+      <mass value="0.3"/>
+      <origin xyz="0 0 0.35"/>
+      <inertia ixx="0.00025" iyy="0.00025" izz="0.00007"/>
+    </inertial>
+  </link>
+
+  <!-- Wheel Joints -->
+  <joint name="torso_l_wheel" type="continuous">
+    <parent link="torso"/>
+    <child link="l_wheel"/>
+    <origin xyz="-0.115 0 0.05"/>
+    <axis xyz="-1 0 0"/>
+    <limit effort="6.0" velocity="20.0"/>
+  </joint>
+
+  <joint name="torso_r_wheel" type="continuous">
+    <parent link="torso"/>
+    <child link="r_wheel"/>
+    <origin xyz="0.115 0 0.05"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="6.0" velocity="20.0"/>
+  </joint>
+
+  <!-- Pole Joint -->
+  <joint name="torso_to_pole" type="revolute">
+    <parent link="torso"/>
+    <child link="pole"/>
+    <origin xyz="0 0 0.171"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="5.0" lower="-3.14" upper="3.14" velocity="5.0"/>
+  </joint>
+
+</robot>
+
+
+<!-- <?xml version="1.0"?>
+<robot name="walker_balance">
+
+  <!-- Torso -->
+  <link name="torso">
+    <visual>
+      <geometry>
+        <box size="0.22 0.08 0.171"/>
+      </geometry>
+      <origin xyz="0 0 0.0995"/>
+      <material name="gray">
+        <color rgba="0.5 0.5 0.5 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.18 0.06 0.171"/>
+      </geometry>
+      <origin xyz="0 0 0.0995"/>
+    </collision>
+    <inertial>
+      <mass value="3"/>
+      <origin xyz="0 0 0.085"/>
+      <inertia ixx="0.0021" iyy="0.0022" izz="0.0008"
+               ixy="0.0" ixz="0.0" iyz="0.0"/>
+    </inertial>
+  </link>
+
+  <!-- Left Wheel -->
+  <link name="l_wheel">
+    <visual>
+      <geometry><cylinder radius="0.038" length="0.03"/></geometry>
+      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
+      <material name="black">
+        <color rgba="0.1 0.1 0.1 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry><cylinder radius="0.05" length="0.035"/></geometry>
+      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
+    </collision>
+    <inertial>
+      <mass value="0.04"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="1.5e-05" iyy="1.5e-05" izz="2.5e-05"/>
+    </inertial>
+  </link>
+
+  <!-- Right Wheel -->
+  <link name="r_wheel">
+    <visual>
+      <geometry><cylinder radius="0.05" length="0.035"/></geometry>
+      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
+    </visual>
+    <collision>
+      <geometry><cylinder radius="0.038" length="0.03"/></geometry>
+      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
+    </collision>
+    <inertial>
+      <mass value="0.04"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="1.5e-05" iyy="1.5e-05" izz="2.5e-05"/>
+    </inertial>
+  </link>
+
+  <!-- Balancing Pole -->
+  <link name="pole">
+    <visual>
+      <geometry><box size="0.03 0.03 0.7"/></geometry>
+      <origin xyz="0 0 0.25"/>
+      <material name="blue">
+        <color rgba="0.2 0.2 0.8 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry><box size="0.03 0.03 0.5"/></geometry>
+      <origin xyz="0 0 0.35"/>
+    </collision>
+    <inertial>
+      <mass value="0.25"/>
+      <origin xyz="0 0 0.25"/>
+      <inertia ixx="0.00012" iyy="0.00012" izz="0.00005"/>
+    </inertial>
+  </link>
+
+  <!-- Wheel Joints -->
+  <joint name="torso_l_wheel" type="continuous">
+    <parent link="torso"/>
+    <child link="l_wheel"/>
+    <origin xyz="-0.115 0 0.038"/>
+    <axis xyz="-1 0 0"/>
+    <limit effort="5.0" velocity="20.0"/>
+  </joint>
+
+  <joint name="torso_r_wheel" type="continuous">
+    <parent link="torso"/>
+    <child link="r_wheel"/>
+    <origin xyz="0.115 0 0.038"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="5.0" velocity="20.0"/>
+  </joint>
+
+  <!-- Pole Joint -->
+  <joint name="torso_to_pole" type="revolute">
+    <parent link="torso"/>
+    <child link="pole"/>
+    <origin xyz="0 0 0.171"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="5.0" lower="-3.14" upper="3.14" velocity="5.0"/>
+  </joint>
+
+</robot> -->
