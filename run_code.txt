@@ -32,3 +32,18 @@ python test/mouse_test.py --model_path models/ppo/ppo_20250430_182643_final.zip
 
 
 python balance-robot-mujoco-rl/src/sb_rl.py -a PPO train -e Env01-v2
+
+
+python train/q_learning_trainer.py --config configs/qlearning.yaml
+
+
+python test/test_qlearning.py  --config configs/qlearning.yaml  --model_path models/q-learning/q-learning_20250501_232540_agent.pkl --use_wandb
+
+
+python train/ppo_walker.py --config configs/ppo_walker.yaml
+
+python test/test_aswalker_ppo.py --config configs/ppo_walker.yaml --model_path models/ppo/ppo_20250509_123809_assistivewalker_final.zip --use_wandb
+
+python test/test_mouse_walker_ppo.py --config configs/ppo_walker.yaml --model_path models/ppo/ppo_20250509_123809_assistivewalker_final.zip
+
+python test/test_mouse_walker_ppo.py --model_path models/ppo/ppo_20250509_123809_assistivewalker_final.zip

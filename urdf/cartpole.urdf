@@ -13,7 +13,7 @@
     </visual>
     <inertial>
       <mass value="0"/>
-      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
     </inertial>
   </link>
 
@@ -35,7 +35,7 @@
     </collision>
     <inertial>
       <mass value="1"/>
-      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      <inertia ixx="0.0242" ixy="0.0" ixz="0.0" iyy="0.0242" iyz="0.0" izz="0.0417"/>
     </inertial>
   </link>
 
@@ -44,7 +44,8 @@
     <origin xyz="0.0 0.0 0.0"/>
     <parent link="slideBar"/>
     <child link="cart"/>
-    <limit effort="1000.0" lower="-15" upper="15" velocity="5"/>
+    <dynamics damping="20.0" friction="0.7"/>
+    <limit effort="50.0" lower="-2.4" upper="2.4" velocity="1.5"/>
   </joint>
 
   <link name="pole">
@@ -59,20 +60,37 @@
     </visual>
     <inertial>
     <origin xyz="0 0 0.5"/>
-      <mass value="10"/>
-      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      <mass value="0.1"/>
+      <inertia ixx="0.0083" ixy="0.0" ixz="0.0" iyy="0.0083" iyz="0.0" izz="0.0000042"/>
     </inertial>
-     <collision>
-      <geometry>
-        <box size="0.05 0.05 1.0"/>	
-      </geometry>
-      <origin rpy="0 0 0" xyz="0 0 0.5"/>
+    <collision>
+        <geometry>
+          <cylinder radius="0.03" length="1.0"/>
+        </geometry>
+        <origin rpy="0 0 0" xyz="0 0 0.5"/>
+        <surface>
+          <friction>
+            <ode mu="0.5" mu2="0.3"/>
+          </friction>
+          <contact>
+            <ode kp="1e8" kd="1e3"/>
+          </contact>
+        </surface>
     </collision>
+    <!-- <collision>
+  <cylinder radius="0.03" length="1.0"/>
+      <surface>
+        <friction ode="mu=0.5 mu2=0.3"/>
+        <contact ode="kp=1e6 kd=1e3"/>
+      </surface>
+            <origin rpy="0 0 0" xyz="0 0 0.5"/>
+     </collision> -->
   </link>
 
   <joint name="cart_to_pole" type="continuous">
     <axis xyz="0 1 0"/>
     <origin xyz="0.0 0.0 0"/>
+    <dynamics damping="0.05"/>
     <parent link="cart"/>
     <child link="pole"/>
   </joint>

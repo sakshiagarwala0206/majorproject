@@ -8,13 +8,13 @@ from stable_baselines3.common.callbacks import CheckpointCallback
 from stable_baselines3.common.monitor import Monitor
 from wandb.integration.sb3 import WandbCallback
 from datetime import datetime
-from train.utils.callbacks import CustomCallback 
+from utils.callbacks import CustomCallback 
 from stable_baselines3.common.callbacks import BaseCallback
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 import numpy as np
-from train.utils.logger import setup_logger
-from train.utils.config_loader import load_config
+from utils.logger import setup_logger
+from utils.config_loader import load_config
 
 logger = setup_logger()
 class StopTrainingOnPatience(BaseCallback):
@@ -63,7 +63,7 @@ class BaseTrainer:
             
     def _init_wandb(self):
         wandb.init(
-            project="assistive-walker-drl",
+            project="assistive-walker-qlearning",
             config=self.config,
             sync_tensorboard=True,
             monitor_gym=True,

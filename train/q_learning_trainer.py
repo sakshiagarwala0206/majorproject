@@ -1,111 +1,163 @@
-import gymnasium
-import numpy as np
 import os
-import pickle
-import logging
-import wandb
+import sys
+import argparse
+import numpy as np
+import gymnasium as gym
 from datetime import datetime
-from train.utils.discretizer import create_bins, discretize
+import wandb
+from gymnasium.envs.registration import register
+from collections import deque
+# Project-specific imports
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
+from train.utils.logger import setup_logger
+from train.utils.config_loader import load_config
 from train.base_trainer import BaseTrainer
+from train.utils.callbacks import CustomCallback
+import pickle
+from train.utils.qtable import convert_q_table_to_dict
+register(
+    id="CartPole-v1",
+    entry_point="environments.cartpole:CartPoleDiscreteEnv",
+    max_episode_steps=500,  # same as Gym CartPole
+)
 
-logger = logging.getLogger(__name__)
+logger = setup_logger()
+parser = argparse.ArgumentParser()
+parser.add_argument('--config', type=str, required=True, help='Path to config file')
+args = parser.parse_args()
 
-class QLearningTrainer(BaseTrainer):
-    def __init__(self, config):
-        self.config = config
-        self.env = gymnasium.make(config.env, render_mode=None)
-        self.env.action_space.seed(config.seed)
-        self.env.observation_space.seed(config.seed)
-        np.random.seed(config.seed)
+# Load config
+config = load_config(args.config)
 
-        self.obs_low = self.env.observation_space.low
-        self.obs_high = self.env.observation_space.high
-        self.bins = create_bins(self.obs_low, self.obs_high, config.bins)
-        self.q_table = np.zeros([config.bins] * len(self.obs_low) + [self.env.action_space.n])
+# 🟡 Init wandb
+wandb.init(project=config.get("wandb_project", "Q-Learning-CartPole"), config=config)
 
-        self.epsilon = config.epsilon
-        self.rewards = []
+class QLearningAgent:
+    def __init__(self, state_space, action_space, config):
+        self.state_space = state_space
+        self.action_space = action_space
+        self.alpha = float(config["learning_rate"])
+        self.gamma = float(config["gamma"])
+        self.epsilon = float(config["epsilon"])
+        self.epsilon_decay = float(config.get("epsilon_decay"))
+        self.min_epsilon = float(config.get("min_epsilon"))
 
-        self.run_id = f"{config.algo}_{config.env}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        self.save_dir = os.path.join("logs", self.run_id)
-        os.makedirs(self.save_dir, exist_ok=True)
+        self.bins = config.get("bins", [20, 20, 20, 20])
+        self.obs_low = np.array(config["obs_low"])
+        self.obs_high = np.array(config["obs_high"])
+        self.q_table = np.zeros(self.bins + [action_space])
 
-        if config.resume_from and os.path.exists(config.resume_from):
-            self.load(config.resume_from)
+    def discretize_state(self, state):
+        ratios = (state - self.obs_low) / (self.obs_high - self.obs_low)
+        ratios = np.clip(ratios, 0, 0.9999)
+        indices = (ratios * self.bins).astype(int)
+        return tuple(indices)
 
-    def train(self):
-        for episode in range(self.config.total_episodes):
-            obs, _ = self.env.reset()
-            state = discretize(obs, self.bins, self.obs_low, self.obs_high)
-            total_reward = 0
-            done = False
+    def choose_action(self, state):
+        discrete_state = self.discretize_state(state)
+        if np.random.rand() < self.epsilon:
+            return np.random.choice(self.action_space)
+        else:
+            return np.argmax(self.q_table[discrete_state])
 
-            alpha = self.config.learning_rate * (0.99 ** episode) if self.config.alpha_schedule == "decay" else self.config.learning_rate
+    def update_q_value(self, state, action, reward, next_state):
+        discrete_state = self.discretize_state(state)
+        discrete_next_state = self.discretize_state(next_state)
+        best_next_action = np.argmax(self.q_table[discrete_next_state])
+        td_target = reward + self.gamma * self.q_table[discrete_next_state][best_next_action]
+        td_error = td_target - self.q_table[discrete_state][action]
+        self.q_table[discrete_state][action] += self.alpha * td_error
 
-            for _ in range(self.config.max_steps):
-                if np.random.random() < self.epsilon:
-                    action = self.env.action_space.sample()
-                else:
-                    action = np.argmax(self.q_table[state])
+def main():
+    trainer = BaseTrainer(
+        algo_name="Q-learning",
+        config=config,
+        env_id="CartPole-v1",
+        run_name=None,
+    )
+    
+    env = gym.make(trainer.env_id)
+    from gymnasium import spaces
 
-                next_obs, reward, terminated, truncated, _ = self.env.step(action)
-                done = terminated or truncated
-                next_state = discretize(next_obs, self.bins, self.obs_low, self.obs_high)
+    if isinstance(env.observation_space, spaces.Discrete):
+        state_space = env.observation_space.n
+    elif isinstance(env.observation_space, spaces.Box):
+        state_space = env.observation_space.shape[0]
+    else:
+        raise ValueError("Unsupported observation space type.")
 
-                shaped_reward = reward - 0.01 * abs(next_obs[2]) - 0.005 * abs(next_obs[3])
-                best_next_action = np.max(self.q_table[next_state])
+    agent = QLearningAgent(state_space=state_space, action_space=env.action_space.n, config=config)
 
-                self.q_table[state][action] += alpha * (
-                    shaped_reward + self.config.discount_factor * best_next_action - self.q_table[state][action]
-                )
+    total_episodes = int(config["total_episodes"])
+    max_steps = int(config["max_steps_per_episode"])
+    solved_reward = config.get("solved_reward", 475)
+    recent_rewards = deque(maxlen=100)
+    convergence_logged = False
 
-                state = next_state
-                total_reward += reward
-                if done:
-                    break
+    for episode in range(total_episodes):
+        state, _ = env.reset()
+        total_rewards = 0
+        start_time = datetime.now()
 
-            self.epsilon = max(self.config.epsilon_min, self.epsilon * self.config.epsilon_decay)
-            self.rewards.append(total_reward)
-            # Log optimal actions and Q-value distribution
-            self.optimal_actions = np.argmax(self.q_table, axis=-1)
-            self.q_values_flat = self.q_table.flatten()
+        for step in range(max_steps):
+            action = agent.choose_action(state)
+            next_state, reward, done, truncated, _ = env.step(action)
+            agent.update_q_value(state, action, reward, next_state)
+            state = next_state
+            total_rewards += reward
 
-            wandb.log({
-                "episode": episode,
-                "reward": total_reward,
-                "epsilon": self.epsilon,
-                "alpha": alpha,
-                "optimal_actions": wandb.Histogram(self.optimal_actions),
-                "Q-table_max": np.max(self.q_table),
-                "Q-table_min": np.min(self.q_table),
-                "Q-table_mean": np.mean(self.q_table)
-            })
-            if episode >= 100:
-                wandb.log({"moving_avg_reward": np.mean(self.rewards[-100:])})
-            if episode % 1000 == 0:
-                wandb.log({"Q-table": wandb.Histogram(self.q_table)})
-                self.save(episode)
+            if done or truncated:
+                break
 
-        self.save("final")
-        self.env.close()
+        agent.epsilon = max(agent.epsilon * agent.epsilon_decay, agent.min_epsilon)
+        episode_length = step + 1
+        recent_rewards.append(total_rewards)
+        avg_reward_100 = np.mean(recent_rewards) if len(recent_rewards) == 100 else None
 
-    def save(self, suffix):
-        with open(os.path.join(self.save_dir, f"q_table_ep{suffix}.pkl"), "wb") as f:
-            pickle.dump(self.q_table, f)
-        logger.info(f"✅ Q-table saved at episode {suffix}")
+        # 🟢 wandb logging
+        wandb.log({
+            "episode": episode + 1,
+            "total_reward": total_rewards,
+            "epsilon": agent.epsilon,
+            "episode_length": episode_length,
+            "average_reward_100": avg_reward_100,
+            "max_q_value": np.max(agent.q_table),
+            "mean_q_value": np.mean(agent.q_table),
+            "q_table_std": np.std(agent.q_table),
+            "time_per_episode": (datetime.now() - start_time).total_seconds(),
+        })
 
-        if suffix == "final":
-            metadata = {
-                "total_episodes": self.config.total_episodes,
-                "epsilon_final": self.epsilon,
-                "bins": self.config.bins,
-                "final_reward_mean_100": np.mean(self.rewards[-100:]),
-            }
-            with open(os.path.join(self.save_dir, "training_metadata.pkl"), "wb") as f:
-                pickle.dump(metadata, f)
-            logger.info("✅ Final metadata saved.")
+        # 🎯 Convergence logging
+        if not convergence_logged and avg_reward_100 is not None and avg_reward_100 >= solved_reward:
+            wandb.log({"convergence_episode": episode + 1})
+            logger.info(f"📈 Environment solved at episode {episode + 1}")
+            convergence_logged = True
 
-    def load(self, path):
-        with open(path, "rb") as f:
-            self.q_table = pickle.load(f)
-        logger.info(f"✅ Resumed Q-table from {path}")
+        logger.info(f"Episode {episode+1}/{total_episodes}, Reward: {total_rewards:.2f}, Epsilon: {agent.epsilon:.4f}")
+
+    # 💾 Save Q-table
+
+    # Convert the trained Q-table to a dictionary for compatibility with the agent
+    q_table_dict = convert_q_table_to_dict(agent.q_table, agent.action_space)
+
+    # Save the converted Q-table dictionary to file
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    os.makedirs(f"./models/{trainer.algo_name.lower()}/", exist_ok=True)
+    model_path = f"./models/{trainer.algo_name.lower()}/{trainer.algo_name.lower()}_{timestamp}_agent.pkl"
+    with open(model_path, "wb") as f:
+        pickle.dump(q_table_dict, f)
+    logger.info(f"✅ Q-learning agent saved at {model_path}")
+
+    # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    # os.makedirs(f"./models/{trainer.algo_name.lower()}/", exist_ok=True)
+    # model_path = f"./models/{trainer.algo_name.lower()}/{trainer.algo_name.lower()}_{timestamp}_agent.pkl"
+    # with open(model_path, "wb") as f:
+    #     pickle.dump(agent.q_table, f)
+    # logger.info(f"✅ Q-learning agent saved at {model_path}")
+
+    trainer.finish()
+
+if __name__ == "__main__":
+    main()
+
+

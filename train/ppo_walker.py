@@ -7,38 +7,34 @@ from datetime import datetime
 from stable_baselines3 import PPO
 from gymnasium.envs.registration import register
 
-# Append root to sys.path for module imports
+# Project-specific imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
-
-# Custom imports
+# Project-specific imports
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
 from train.base_trainer import BaseTrainer
 from train.utils.callbacks import CustomCallback
 from train.utils.logger import setup_logger
 from train.utils.config_loader import load_config
-import environments.cartpole  # Register custom env module
-from train.utils.config_loader import get_args
+import environments.walker  # Ensure this import is valid
 
 logger = setup_logger()
 
-# # Parse CLI arguments
-# parser = argparse.ArgumentParser()
-# parser.add_argument('--config', type=str, required=True, help='Path to config file')
-# args = parser.parse_args()
+parser = argparse.ArgumentParser()
+parser.add_argument('--config', type=str, required=True, help='Path to config file')
+args = parser.parse_args()
 
-# # Load config
-# config = load_config(args.config)
+# Load config
+config = load_config(args.config)
 
-config = get_args()
-
-# Register custom Gymnasium environment
+# Register custom environment
 register(
-    id="WalkerBalanceContinuousEnv",
-    entry_point="environments.walker:WalkerBalanceContinuousEnv",
+    id="AssistiveWalkerContinuousEnv-v0",
+    entry_point="environments.walker:AssistiveWalkerContinuousEnv",
     max_episode_steps=500,
 )
 
-# Action noise wrapper
 class ActionNoiseWrapper(gym.ActionWrapper):
+    """Adds Gaussian noise to actions and logs how much noise was added."""
     def __init__(self, env, initial_noise=0.5, decay_rate=0.999, min_noise=0.05):
         super().__init__(env)
         self.initial_noise = initial_noise
@@ -51,55 +47,59 @@ class ActionNoiseWrapper(gym.ActionWrapper):
         noise = np.random.normal(0, self.current_noise, size=action.shape)
         noisy_action = action + noise
         clipped_action = np.clip(noisy_action, self.action_space.low, self.action_space.high)
-        self.logger.info(f"[Noise] Level: {self.current_noise:.4f}, Action: {action}, Noise: {noise}")
+
+        # Log the noise and the difference from the clean action
+        self.logger.info(f"Noise Level: {self.current_noise:.4f}, "
+                         f"Original Action: {action}, "
+                         f"Noise: {noise}, "
+                         f"Noisy Action: {clipped_action}")
+
         return clipped_action
 
     def step(self, action):
         self.current_noise = max(self.current_noise * self.decay_rate, self.min_noise)
         return self.env.step(action)
 
-
 def main():
-    # Initialize trainer
     trainer = BaseTrainer(
         algo_name="PPO",
         config=config,
-        env_id="WalkerBalanceContinuousEnv",
+        env_id="AssistiveWalkerContinuousEnv-v0",
         run_name=None,
     )
 
-    # Wrap with action noise
-    trainer.env = ActionNoiseWrapper(trainer.env)
+    # Wrap environment with noise wrapper
+    noisy_env = ActionNoiseWrapper(trainer.env)
 
-    # Initialize model
+    # Replace trainer.env with wrapped one to keep consistency
+    trainer.env = noisy_env
+
     model = PPO(
         policy=trainer.wandb_config.policy,
-        env=trainer.env,
+        env=noisy_env,
         verbose=1,
         learning_rate=float(trainer.wandb_config.learning_rate),
         gamma=trainer.wandb_config.gamma,
         batch_size=trainer.wandb_config.batch_size,
-        tensorboard_log=f"./{trainer.algo_name.lower()}_tensorboard/"
+        tensorboard_log=f"./{trainer.algo_name.lower()}_tensorboard/",
     )
 
-    # Train
-    logger.info("🚀 Starting PPO training with noise-injected environment...")
+    logger.info("🚀 Starting PPO training with action noise and noise logging...")
     model.learn(total_timesteps=trainer.wandb_config.total_timesteps, callback=trainer.get_callbacks())
 
-    # Save model
+    # Save trained model
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    model_path = f"./models/{trainer.algo_name.lower()}/{trainer.algo_name.lower()}_{timestamp}_final"
+    model_path = f"./models/{trainer.algo_name.lower()}/{trainer.algo_name.lower()}_{timestamp}_assistivewalker_final"
     model.save(model_path)
-    logger.info(f"✅ Model saved at {model_path}")
+    logger.info(f"✅ PPO model saved at {model_path}")
 
-    # Log convergence episode if tracked
+    # Log convergence episode if it exists
     if trainer.custom_callback.convergence_episode is not None:
         import wandb
         wandb.log({"Convergence Episode": trainer.custom_callback.convergence_episode})
-        logger.info(f"📈 Logged Convergence Episode: {trainer.custom_callback.convergence_episode}")
+        logger.info(f"📈 Convergence Episode logged to WandB: {trainer.custom_callback.convergence_episode}")
 
     trainer.finish()
-
 
 if __name__ == "__main__":
     main()

@@ -1,226 +1,178 @@
 <?xml version="1.0"?>
-<robot name="walker_balance_optimized">
+<robot name="assistive_walker">
 
-  <!-- Torso -->
-  <link name="torso">
+  <!-- Base -->
+  <link name="base_link">
+    <inertial>
+      <origin xyz="0 0 0.12"/>
+      <mass value="4.0"/>
+      <inertia ixx="0.15" iyy="0.15" izz="0.18" ixy="0" ixz="0" iyz="0"/>
+    </inertial>
     <visual>
+      <origin xyz="0 0 0.12"/>
       <geometry>
-        <box size="0.22 0.08 0.171"/>
+        <box size="0.5 0.3 0.24"/>
       </geometry>
-      <origin xyz="0 0 0.0995"/>
-      <material name="gray">
-        <color rgba="0.5 0.5 0.5 1.0"/>
+      <material name="blue">
+        <color rgba="0 0 1 1"/>
       </material>
     </visual>
     <collision>
+      <origin xyz="0 0 0.12"/>
       <geometry>
-        <box size="0.22 0.08 0.171"/>
+        <box size="0.5 0.3 0.24"/>
       </geometry>
-      <origin xyz="0 0 0.0995"/>
+      <surface>
+        <friction>
+          <ode mu="0.7" mu2="0.5"/>
+        </friction>
+      </surface>
     </collision>
-    <inertial>
-      <mass value="3.5"/>
-      <origin xyz="0 0 0.085"/>
-      <inertia ixx="0.0104" iyy="0.0226" izz="0.0160"
-               ixy="0.0" ixz="0.0" iyz="0.0"/>
-    </inertial>
   </link>
 
   <!-- Left Wheel -->
-  <link name="l_wheel">
+  <link name="left_wheel">
+    <inertial>
+      <origin xyz="0 0 0"/>
+      <mass value="0.8"/>
+      <inertia ixx="0.004" iyy="0.004" izz="0.008" ixy="0" ixz="0" iyz="0"/>
+    </inertial>
     <visual>
-      <geometry><cylinder radius="0.05" length="0.035"/></geometry>
-      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+        <cylinder radius="0.15" length="0.08"/>
+      </geometry>
       <material name="black">
-        <color rgba="0.1 0.1 0.1 1.0"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
-      <geometry><cylinder radius="0.05" length="0.035"/></geometry>
-      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+        <cylinder radius="0.15" length="0.08"/>
+      </geometry>
+      <surface>
+        <friction>
+          <ode mu="1.2" mu2="0.8"/>
+        </friction>
+      </surface>
     </collision>
-    <inertial>
-      <mass value="0.06"/>
-      <origin xyz="0 0 0"/>
-      <inertia ixx="4.36e-05" iyy="4.36e-05" izz="4.5e-5"/>
-    </inertial>
   </link>
 
   <!-- Right Wheel -->
-  <link name="r_wheel">
-    <visual>
-      <geometry><cylinder radius="0.05" length="0.035"/></geometry>
-      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
-    </visual>
-    <collision>
-      <geometry><cylinder radius="0.05" length="0.035"/></geometry>
-      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
-    </collision>
+  <link name="right_wheel">
     <inertial>
-      <mass value="0.06"/>
       <origin xyz="0 0 0"/>
-      <inertia ixx="3.0e-05" iyy="3.0e-05" izz="4.5e-05"/>
+      <mass value="0.8"/>
+      <inertia ixx="0.004" iyy="0.004" izz="0.008" ixy="0" ixz="0" iyz="0"/>
     </inertial>
-  </link>
-
-  <!-- Balancing Pole -->
-  <link name="pole">
     <visual>
-      <geometry><box size="0.03 0.03 0.7"/></geometry>
-      <origin xyz="0 0 0.35"/>
-      <material name="blue">
-        <color rgba="0.2 0.2 0.8 1.0"/>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+        <cylinder radius="0.15" length="0.08"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
-      <geometry><box size="0.03 0.03 0.7"/></geometry>
-      <origin xyz="0 0 0.35"/>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+        <cylinder radius="0.15" length="0.08"/>
+      </geometry>
+      <surface>
+        <friction>
+          <ode mu="1.2" mu2="0.8"/>
+        </friction>
+      </surface>
     </collision>
-    <inertial>
-      <mass value="0.3"/>
-      <origin xyz="0 0 0.35"/>
-      <inertia ixx="0.00025" iyy="0.00025" izz="0.00007"/>
-    </inertial>
   </link>
 
-  <!-- Wheel Joints -->
-  <joint name="torso_l_wheel" type="continuous">
-    <parent link="torso"/>
-    <child link="l_wheel"/>
-    <origin xyz="-0.115 0 0.05"/>
-    <axis xyz="-1 0 0"/>
-    <limit effort="6.0" velocity="20.0"/>
+  <!-- Pole (Assistive Handle) -->
+  <link name="pole">
+    <inertial>
+      <origin xyz="0 0 0.5"/>
+      <mass value="1.2"/>
+      <inertia ixx="0.01" iyy="0.01" izz="0.005" ixy="0" ixz="0" iyz="0"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0.5"/>
+      <geometry>
+        <cylinder radius="0.03" length="1.0"/>
+      </geometry>
+      <material name="red">
+        <color rgba="1 0 0 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.5"/>
+      <geometry>
+        <cylinder radius="0.03" length="1.0"/>
+      </geometry>
+      <surface>
+        <friction>
+          <ode mu="0.8" mu2="0.6"/>
+        </friction>
+      </surface>
+    </collision>
+  </link>
+
+  <!-- MPU6050 Sensor (IMU) -->
+  <link name="imu_link">
+    <inertial>
+      <origin xyz="0 0 0"/>
+      <mass value="0.01"/>
+      <inertia ixx="0.00001" iyy="0.00001" izz="0.00001" ixy="0" ixz="0" iyz="0"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0"/>
+      <geometry>
+        <box size="0.02 0.02 0.01"/>
+      </geometry>
+      <material name="yellow">
+        <color rgba="1 1 0 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0"/>
+      <geometry>
+        <box size="0.02 0.02 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Joints -->
+
+  <!-- Left Wheel Joint -->
+  <joint name="left_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="left_wheel"/>
+    <origin xyz="0 0.18 0.08" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.05" friction="0.2"/>
   </joint>
 
-  <joint name="torso_r_wheel" type="continuous">
-    <parent link="torso"/>
-    <child link="r_wheel"/>
-    <origin xyz="0.115 0 0.05"/>
-    <axis xyz="1 0 0"/>
-    <limit effort="6.0" velocity="20.0"/>
+  <!-- Right Wheel Joint -->
+  <joint name="right_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="right_wheel"/>
+    <origin xyz="0 -0.18 0.08" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.05" friction="0.2"/>
   </joint>
 
   <!-- Pole Joint -->
-  <joint name="torso_to_pole" type="revolute">
-    <parent link="torso"/>
+  <joint name="pole_joint" type="fixed">
+    <parent link="base_link"/>
     <child link="pole"/>
-    <origin xyz="0 0 0.171"/>
-    <axis xyz="1 0 0"/>
-    <limit effort="5.0" lower="-3.14" upper="3.14" velocity="5.0"/>
+    <origin xyz="0.18 0 0.24" rpy="0 0 0"/>
+  </joint>
+
+  <!-- IMU Joint -->
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <origin xyz="0 0 0.2" rpy="0 0 0"/>
   </joint>
 
 </robot>
-
-
-<!-- <?xml version="1.0"?>
-<robot name="walker_balance">
-
-  <!-- Torso -->
-  <link name="torso">
-    <visual>
-      <geometry>
-        <box size="0.22 0.08 0.171"/>
-      </geometry>
-      <origin xyz="0 0 0.0995"/>
-      <material name="gray">
-        <color rgba="0.5 0.5 0.5 1.0"/>
-      </material>
-    </visual>
-    <collision>
-      <geometry>
-        <box size="0.18 0.06 0.171"/>
-      </geometry>
-      <origin xyz="0 0 0.0995"/>
-    </collision>
-    <inertial>
-      <mass value="3"/>
-      <origin xyz="0 0 0.085"/>
-      <inertia ixx="0.0021" iyy="0.0022" izz="0.0008"
-               ixy="0.0" ixz="0.0" iyz="0.0"/>
-    </inertial>
-  </link>
-
-  <!-- Left Wheel -->
-  <link name="l_wheel">
-    <visual>
-      <geometry><cylinder radius="0.038" length="0.03"/></geometry>
-      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
-      <material name="black">
-        <color rgba="0.1 0.1 0.1 1.0"/>
-      </material>
-    </visual>
-    <collision>
-      <geometry><cylinder radius="0.05" length="0.035"/></geometry>
-      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
-    </collision>
-    <inertial>
-      <mass value="0.04"/>
-      <origin xyz="0 0 0"/>
-      <inertia ixx="1.5e-05" iyy="1.5e-05" izz="2.5e-05"/>
-    </inertial>
-  </link>
-
-  <!-- Right Wheel -->
-  <link name="r_wheel">
-    <visual>
-      <geometry><cylinder radius="0.05" length="0.035"/></geometry>
-      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
-    </visual>
-    <collision>
-      <geometry><cylinder radius="0.038" length="0.03"/></geometry>
-      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
-    </collision>
-    <inertial>
-      <mass value="0.04"/>
-      <origin xyz="0 0 0"/>
-      <inertia ixx="1.5e-05" iyy="1.5e-05" izz="2.5e-05"/>
-    </inertial>
-  </link>
-
-  <!-- Balancing Pole -->
-  <link name="pole">
-    <visual>
-      <geometry><box size="0.03 0.03 0.7"/></geometry>
-      <origin xyz="0 0 0.25"/>
-      <material name="blue">
-        <color rgba="0.2 0.2 0.8 1.0"/>
-      </material>
-    </visual>
-    <collision>
-      <geometry><box size="0.03 0.03 0.5"/></geometry>
-      <origin xyz="0 0 0.35"/>
-    </collision>
-    <inertial>
-      <mass value="0.25"/>
-      <origin xyz="0 0 0.25"/>
-      <inertia ixx="0.00012" iyy="0.00012" izz="0.00005"/>
-    </inertial>
-  </link>
-
-  <!-- Wheel Joints -->
-  <joint name="torso_l_wheel" type="continuous">
-    <parent link="torso"/>
-    <child link="l_wheel"/>
-    <origin xyz="-0.115 0 0.038"/>
-    <axis xyz="-1 0 0"/>
-    <limit effort="5.0" velocity="20.0"/>
-  </joint>
-
-  <joint name="torso_r_wheel" type="continuous">
-    <parent link="torso"/>
-    <child link="r_wheel"/>
-    <origin xyz="0.115 0 0.038"/>
-    <axis xyz="1 0 0"/>
-    <limit effort="5.0" velocity="20.0"/>
-  </joint>
-
-  <!-- Pole Joint -->
-  <joint name="torso_to_pole" type="revolute">
-    <parent link="torso"/>
-    <child link="pole"/>
-    <origin xyz="0 0 0.171"/>
-    <axis xyz="1 0 0"/>
-    <limit effort="5.0" lower="-3.14" upper="3.14" velocity="5.0"/>
-  </joint>
-
-</robot> -->
