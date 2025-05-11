@@ -6,12 +6,12 @@
     <inertial>
       <origin xyz="0 0 0.12"/>
       <mass value="4.0"/>
-      <inertia ixx="0.15" iyy="0.15" izz="0.18" ixy="0" ixz="0" iyz="0"/>
+      <inertia ixx="0.099" iyy="0.058" izz="0.053" ixy="0" ixz="0" iyz="0"/>
     </inertial>
     <visual>
       <origin xyz="0 0 0.12"/>
       <geometry>
-        <box size="0.5 0.3 0.24"/>
+        <box size="0.3 0.5 0.24"/>
       </geometry>
       <material name="blue">
         <color rgba="0 0 1 1"/>
@@ -20,7 +20,7 @@
     <collision>
       <origin xyz="0 0 0.12"/>
       <geometry>
-        <box size="0.5 0.3 0.24"/>
+        <box size="0.3 0.5 0.24"/>
       </geometry>
       <surface>
         <friction>
@@ -35,7 +35,7 @@
     <inertial>
       <origin xyz="0 0 0"/>
       <mass value="0.8"/>
-      <inertia ixx="0.004" iyy="0.004" izz="0.008" ixy="0" ixz="0" iyz="0"/>
+      <inertia ixx="0.005" iyy="0.005" izz="0.009" ixy="0" ixz="0" iyz="0"/>
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="1.5708 0 0"/>
@@ -64,7 +64,7 @@
     <inertial>
       <origin xyz="0 0 0"/>
       <mass value="0.8"/>
-      <inertia ixx="0.004" iyy="0.004" izz="0.008" ixy="0" ixz="0" iyz="0"/>
+      <inertia ixx="0.005" iyy="0.005" izz="0.009" ixy="0" ixz="0" iyz="0"/>
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="1.5708 0 0"/>
@@ -93,7 +93,7 @@
     <inertial>
       <origin xyz="0 0 0.5"/>
       <mass value="1.2"/>
-      <inertia ixx="0.01" iyy="0.01" izz="0.005" ixy="0" ixz="0" iyz="0"/>
+      <inertia ixx="0.01" iyy="0.01" izz="0.00054" ixy="0" ixz="0" iyz="0"/>
     </inertial>
     <visual>
       <origin xyz="0 0 0.5"/>
@@ -147,7 +147,7 @@
   <joint name="left_wheel_joint" type="continuous">
     <parent link="base_link"/>
     <child link="left_wheel"/>
-    <origin xyz="0 0.18 0.08" rpy="0 0 0"/>
+    <origin xyz="0 0.28 0" rpy="0 0 0"/>
     <axis xyz="0 1 0"/>
     <dynamics damping="0.05" friction="0.2"/>
   </joint>
@@ -156,23 +156,23 @@
   <joint name="right_wheel_joint" type="continuous">
     <parent link="base_link"/>
     <child link="right_wheel"/>
-    <origin xyz="0 -0.18 0.08" rpy="0 0 0"/>
+    <origin xyz="0 -0.28 0" rpy="0 0 0"/>
     <axis xyz="0 1 0"/>
     <dynamics damping="0.05" friction="0.2"/>
   </joint>
 
   <!-- Pole Joint -->
-  <joint name="pole_joint" type="fixed">
+  <joint name="pole_joint" type="revolute">
     <parent link="base_link"/>
     <child link="pole"/>
-    <origin xyz="0.18 0 0.24" rpy="0 0 0"/>
+    <origin xyz="0.05 0 0.24" rpy="0 0 0"/>
   </joint>
 
   <!-- IMU Joint -->
   <joint name="imu_joint" type="fixed">
     <parent link="base_link"/>
     <child link="imu_link"/>
-    <origin xyz="0 0 0.2" rpy="0 0 0"/>
+    <origin xyz="0 0 0.24" rpy="0 0 0"/>
   </joint>
 
 </robot>

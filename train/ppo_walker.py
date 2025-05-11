@@ -30,7 +30,7 @@ config = load_config(args.config)
 register(
     id="AssistiveWalkerContinuousEnv-v0",
     entry_point="environments.walker:AssistiveWalkerContinuousEnv",
-    max_episode_steps=500,
+    max_episode_steps=10000,
 )
 
 class ActionNoiseWrapper(gym.ActionWrapper):

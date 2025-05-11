@@ -72,6 +72,7 @@ def main():
     # Wrap environment with noise wrapper
     noisy_env = ActionNoiseWrapper(trainer.env)
 
+
     # Replace trainer.env with wrapped one to keep consistency
     trainer.env = noisy_env
 
