@@ -59,7 +59,14 @@ class AssistiveWalkerBaseEnv(gymnasium.Env):
         # Print joint info for debugging (uncomment if needed)
         # for i in range(p.getNumJoints(self.robot_id)):
         #     print(i, p.getJointInfo(self.robot_id, i)[1])
+        # Randomize pole angle and (optionally) wheel positions
+        init_pole_angle = np.random.uniform(-0.05, 0.05)
+        init_left_wheel = np.random.uniform(-0.01, 0.01)
+        init_right_wheel = np.random.uniform(-0.01, 0.01)
 
+        p.resetJointState(self.robot_id, 0, init_left_wheel, 0)   # left_wheel_joint
+        p.resetJointState(self.robot_id, 1, init_right_wheel, 0)  # right_wheel_joint
+        p.resetJointState(self.robot_id, 2, init_pole_angle, 0)
         # Disable default motors for wheels
         for joint in [0, 1]:  # Update indices if necessary
             p.setJointMotorControl2(self.robot_id, joint, p.VELOCITY_CONTROL, force=0)
@@ -109,7 +116,7 @@ class AssistiveWalkerBaseEnv(gymnasium.Env):
         base_x = obs[2]
         left_wheel_vel = obs[5]
         right_wheel_vel = obs[6]
-        reward = -abs(pole_angle) + 0.1 * base_x - 0.01 * (left_wheel_vel**2 + right_wheel_vel**2)
+        reward = -abs(pole_angle) + 0.1 * abs(base_x) - 0.01 * (left_wheel_vel**2 + right_wheel_vel**2)
         return reward
 
     def _is_done(self, obs):

@@ -29,7 +29,7 @@ config = load_config(args.config)
 # Register custom environment
 register(
     id="AssistiveWalkerContinuousEnv-v0",
-    entry_point="environments.walker:AssistiveWalkerContinuousEnv",
+    entry_point="environments.walker_1:AssistiveWalkerContinuousEnv",
     max_episode_steps=10000,
 )
 

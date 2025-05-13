@@ -63,7 +63,7 @@ class BaseTrainer:
             
     def _init_wandb(self):
         wandb.init(
-            project="assistive-walker-qlearning",
+            project="assistive-walker-DRL-train",
             config=self.config,
             sync_tensorboard=True,
             monitor_gym=True,
@@ -110,7 +110,7 @@ class BaseTrainer:
         checkpoint_callback = CheckpointCallback(
             save_freq=10_000,
             save_path=f"./models/{self.algo_name.lower()}/{timestamp}/",
-            name_prefix=f"{self.algo_name.lower()}_cartpole",
+            name_prefix=f"{self.algo_name.lower()}_walker",
             save_replay_buffer=True,
             save_vecnormalize=True,
         )
