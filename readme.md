@@ -3,13 +3,13 @@
 
 # Comparative Analysis of Deep Reinforcement Learning, Traditional RL, and PID Control for Assistive Walker and CartPole Systems
 
-Overview:
+## Overview:
 
 This repository provides a unified research platform for benchmarking classical and modern control strategies—including PID, Q-Learning, PPO, SAC, and DDPG—on two custom robotic systems: an Assistive Walker and a CartPole. Both systems are modeled using URDF for realistic physics and simulated in PyBullet, with custom Gymnasium environments for reinforcement learning research.
 
 ---
 
-Table of Contents:
+## Table of Contents:
 
 * Project Objectives
 * System Architecture
@@ -26,7 +26,7 @@ Table of Contents:
 
 ---
 
-Project Objectives:
+## Project Objectives:
 
 * Develop custom URDF models for both systems, capturing realistic mechanical properties.
 * Implement Gymnasium-compatible environments using PyBullet for physics simulation.
@@ -36,7 +36,7 @@ Project Objectives:
 
 ---
 
-System Architecture:
+## System Architecture:
 
 Layer:          Description:
 URDF Model      Defines robot structure, joints, inertia, friction, and sensors.
@@ -46,19 +46,19 @@ RL Algorithm    Agent interacts with environment, learns to optimize reward.
 
 ---
 
-Assistive Walker:
+## Assistive Walker:
 
 Description:
 A differential-drive walker with two powered wheels, an assistive handle (pole), and a simulated IMU sensor. Designed for research in stabilization, navigation, and user-adaptive control.
 
-URDF Highlights:
+## URDF Highlights:
 
 * Base: Rigid box, 4.0 kg, realistic inertia.
 * Wheels: Two, each 0.8 kg, high friction for realistic drive.
 * Pole: 1.2 kg, 1.0 m, revolute joint for handle dynamics.
 * IMU: Simulated MPU6050, provides orientation, angular velocity, and linear acceleration data.
 
-Environment:
+## Environment:
 
 * Observation: Pole angle/velocity, base pose, wheel velocities, IMU data.
 * Action:
@@ -70,19 +70,19 @@ Environment:
 
 ---
 
-CartPole:
+## CartPole:
 
 Description:
 A classic inverted pendulum system with a sliding cart and a pole, implemented with a custom URDF for realistic simulation.
 
-URDF Highlights:
+## URDF Highlights:
 
 * Track: Fixed, 30x0.05x0.05 m, visual only.
 * Cart: 0.5x0.5x0.2 m, 4 kg, prismatic joint for horizontal motion.
 * Pole: 1.0 m, 1 kg, continuous joint for rotation.
 * Friction/Damping: Realistic values for both cart and pole to ensure stable, physical behavior.
 
-Environment:
+## Environment:
 
 * Observation: Cart position/velocity, pole angle/velocity.
 * Action:
@@ -94,11 +94,11 @@ Environment:
 
 ---
 
-Custom Environment Creation:
+## Custom Environment Creation:
 
 Both environments are implemented as Python classes inheriting from gymnasium.Env.
 
-Key Steps:
+### Key Steps:
 
 1. URDF Modeling: Define robot structure and joints.
 2. PyBullet Integration: Load URDF, set up physics.
@@ -106,7 +106,8 @@ Key Steps:
 4. Reward & Episode Logic: Specify how agents are scored and when episodes end.
 5. Registration: Register with Gymnasium for use in RL pipelines.
 
-Example Usage:
+
+### Example Usage:
 
 ```
 # Assistive Walker (Continuous)
@@ -132,7 +133,8 @@ env.close()
 
 ---
 
-Control Algorithms:
+
+## Control Algorithms:
 
 Algorithm:     Type:          Action Space:  Library:              Notes:
 PID            Classical      Continuous     Custom                Baseline for comparison
@@ -145,7 +147,8 @@ All RL algorithms are trained and evaluated using Stable Baselines3, with custom
 
 ---
 
-Training & Evaluation Pipeline:
+
+## Training & Evaluation Pipeline:
 
 1. Configure Environment: Choose robot and action space.
 2. Select Algorithm: PID, Q-Learning, PPO, SAC, or DDPG.
@@ -153,7 +156,8 @@ Training & Evaluation Pipeline:
 4. Evaluate: Test trained policy, collect metrics (reward, episode length, stability).
 5. Analyze: Compare across algorithms and environments for research insights.
 
-Example Config (PPO):
+
+## Example Config (PPO):
 
 ```
 policy: MlpPolicy  
@@ -168,7 +172,8 @@ wandb_project: assistive-walker-ppo
 
 ---
 
-How to Run:
+
+## How to Run:
 
 1. Install Dependencies:
 
@@ -193,7 +198,8 @@ python train/ppo_trainer.py --config configs/cartpole_ppo_config.yaml
 
 ---
 
-File Structure:
+
+## File Structure:
 
 ```
 urdf/
@@ -217,7 +223,8 @@ README.txt                    # This file
 
 ---
 
-Research Insights:
+
+## Research Insights:
 
 * PID: Fast, interpretable, but limited adaptability to nonlinearities and disturbances.
 * Q-Learning: Effective for simple, discrete tasks, but does not scale well to high-dimensional or continuous domains.
@@ -227,11 +234,6 @@ Research Insights:
 
 ---
 
-References:
-
-\[1] Custom Assistive Walker Code - [https://ppl-ai-file-upload.s3.amazonaws.com/.../Custom-assistive-walker-code-used.pdf](https://ppl-ai-file-upload.s3.amazonaws.com/.../Custom-assistive-walker-code-used.pdf)
-\[2] CartPole Documentation - [https://ppl-ai-file-upload.s3.amazonaws.com/.../Cart-Pole-Documentation.pdf](https://ppl-ai-file-upload.s3.amazonaws.com/.../Cart-Pole-Documentation.pdf)
-\[3] Assistive Walker Documentation - [https://ppl-ai-file-upload.s3.amazonaws.com/.../Assistive-Walker-Documentation.pdf](https://ppl-ai-file-upload.s3.amazonaws.com/.../Assistive-Walker-Documentation.pdf)
 
 ---
 
