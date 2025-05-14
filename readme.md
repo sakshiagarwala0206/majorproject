@@ -1,5 +1,3 @@
-Here's the complete `README.md` code block based on your project description:
-
 ````markdown
 # Comparative Analysis of Deep Reinforcement Learning, Traditional RL, and PID Control for Assistive Walker and CartPole Systems
 
