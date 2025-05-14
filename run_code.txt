@@ -42,8 +42,11 @@ python test/test_qlearning.py  --config configs/qlearning.yaml  --model_path mod
 
 python train/ppo_walker.py --config configs/ppo_walker.yaml
 
-python test/test_aswalker_ppo.py --config configs/ppo_walker.yaml --model_path models/ppo/ppo_20250509_123809_assistivewalker_final.zip --use_wandb
-
 python test/test_mouse_walker_ppo.py --config configs/ppo_walker.yaml --model_path models/ppo/ppo_20250509_123809_assistivewalker_final.zip
 
 python test/test_mouse_walker_ppo.py --model_path models/ppo/ppo_20250509_123809_assistivewalker_final.zip
+
+
+python test/test_aswalker_ppo.py --config configs/ppo_walker.yaml --model_path models/ppo/BaseConfig_PPO_AW_01.zip --use_wandb
+
+python train/sac_walker.py --config configs/sac_walker_01.yaml

@@ -15,7 +15,7 @@ import pybullet as p
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), './')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
-from environments.walker import AssistiveWalkerContinuousEnv
+from environments.walker_1 import AssistiveWalkerContinuousEnv
 from controllers.drl_controller import DRLController
 from train.utils.logger import setup_logger
 from stable_baselines3 import PPO
@@ -25,8 +25,8 @@ logger = setup_logger()
 # Register the custom environment
 register(
     id="AssistiveWalkerContinuousEnv-v0",
-    entry_point="environments.walker:AssistiveWalkerContinuousEnv",
-    max_episode_steps=500,
+    entry_point="environments.walker_1:AssistiveWalkerContinuousEnv",
+    max_episode_steps=10000,
 )
 
 def load_config(path):
@@ -150,7 +150,7 @@ if __name__ == "__main__":
     # WandB setup
     if args.use_wandb:
         wandb.init(
-            project="assistive-walker-eval-DRL",
+            project="assistive-walker-test-DRL",
             config=vars(config),
             name=f"eval_PPO_{datetime.now():%Y%m%d_%H%M%S}",
         )
@@ -168,7 +168,7 @@ if __name__ == "__main__":
     # Evaluate
     logger.info("Evaluating AssistiveWalkerContinuousEnv with PPO...")
     rewards, overshoots, settling_times, energy_list, smoothness_list, metrics = evaluate_controller(
-        env, controller, getattr(config, "eval_episodes", 10), getattr(config, "max_steps", 500)
+        env, controller, getattr(config, "eval_episodes", 30), getattr(config, "max_steps", 10000)
     )
     logger.info(f"Results: {metrics}")
 

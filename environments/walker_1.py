@@ -40,7 +40,7 @@ class AssistiveWalkerBaseEnv(gymnasium.Env):
         self.current_step = 0
 
         # Set IMU link index (update this according to your URDF)
-        self.imu_link_index = 4  # CHANGE THIS if your imu_link index is different
+        self.imu_link_index = 3  # CHANGE THIS if your imu_link index is different
         self.prev_lin_vel = np.zeros(3)
 
     def reset(self, seed=None, options=None):
@@ -55,14 +55,23 @@ class AssistiveWalkerBaseEnv(gymnasium.Env):
             raise FileNotFoundError(f"URDF file not found at {urdf_path}")
 
         self.robot_id = p.loadURDF(urdf_path, basePosition=[0, 0, 0.15])
+        # for i in range(p.getNumJoints(self.robot_id)):
+        #     print(i, p.getJointInfo(self.robot_id, i)[12].decode('utf-8'))
 
         # Print joint info for debugging (uncomment if needed)
         # for i in range(p.getNumJoints(self.robot_id)):
         #     print(i, p.getJointInfo(self.robot_id, i)[1])
         # Randomize pole angle and (optionally) wheel positions
+
+
+        # train angles
         init_pole_angle = np.random.uniform(-0.05, 0.05)
         init_left_wheel = np.random.uniform(-0.01, 0.01)
         init_right_wheel = np.random.uniform(-0.01, 0.01)
+
+        # init_pole_angle = np.random.uniform(-0.5, 0.5)
+        # init_left_wheel = np.random.uniform(-0.2, 0.2)
+        # init_right_wheel = np.random.uniform(-0.2, 0.2)
 
         p.resetJointState(self.robot_id, 0, init_left_wheel, 0)   # left_wheel_joint
         p.resetJointState(self.robot_id, 1, init_right_wheel, 0)  # right_wheel_joint
@@ -106,6 +115,10 @@ class AssistiveWalkerBaseEnv(gymnasium.Env):
         self.prev_lin_vel = imu_lin_vel
         imu_euler = p.getEulerFromQuaternion(imu_quat)
         imu_obs = np.concatenate((np.array(imu_euler), imu_ang_vel, lin_acc))
+        imu_state = p.getLinkState(self.robot_id, self.imu_link_index, computeLinkVelocity=1)
+        if imu_state is None:
+            raise RuntimeError(f"IMU link index {self.imu_link_index} not found. Check URDF and link indices.")
+        imu_quat = imu_state[1]
 
         # Concatenate IMU data to observation
         obs = np.concatenate((obs, imu_obs))
@@ -116,7 +129,7 @@ class AssistiveWalkerBaseEnv(gymnasium.Env):
         base_x = obs[2]
         left_wheel_vel = obs[5]
         right_wheel_vel = obs[6]
-        reward = -abs(pole_angle) + 0.1 * abs(base_x) - 0.01 * (left_wheel_vel**2 + right_wheel_vel**2)
+        reward = 1.0 - abs(pole_angle) - 0.1 * abs(base_x) - 0.01 * (left_wheel_vel**2 + right_wheel_vel**2)
         return reward
 
     def _is_done(self, obs):

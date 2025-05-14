@@ -1,0 +1,9 @@
+policy: "MlpPolicy"
+learning_rate: 0.0003
+gamma: 0.99
+buffer_size: 1000000
+learning_starts: 100
+batch_size: 256
+tau: 0.005
+use_sde: True
+total_timesteps: 1000000
