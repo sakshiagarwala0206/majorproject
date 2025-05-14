@@ -6,4 +6,4 @@ learning_starts: 100
 batch_size: 256
 tau: 0.005
 use_sde: True
-total_timesteps: 1000000
+total_timesteps: 300000

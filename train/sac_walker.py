@@ -15,7 +15,8 @@ from train.utils.callbacks import CustomCallback
 from train.utils.logger import setup_logger
 from train.utils.config_loader import load_config
 import environments.walker
-
+from train.base_trainer import StopTrainingOnPatience
+from stable_baselines3.common.callbacks import CallbackList
 logger = setup_logger()
 
 parser = argparse.ArgumentParser()
@@ -86,9 +87,11 @@ def main():
     )
 
     logger.info("🚀 Starting SAC training with action noise and noise logging...")
+    patience_callback = StopTrainingOnPatience(min_improvement=1.0, patience=200000)
+    callbacks = [patience_callback] + list(trainer.get_callbacks())
     model.learn(
         total_timesteps=trainer.wandb_config.total_timesteps,
-        callback=trainer.get_callbacks(),
+         callback=callbacks,
         log_interval=4
     )
 
