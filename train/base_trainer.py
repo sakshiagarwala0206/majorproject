@@ -63,7 +63,7 @@ class BaseTrainer:
             
     def _init_wandb(self):
         wandb.init(
-            project="assistive-walker-DRL-train",
+            project="cartpole-DRL-train",
             config=self.config,
             sync_tensorboard=True,
             monitor_gym=True,

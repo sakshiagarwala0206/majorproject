@@ -52,6 +52,11 @@ class CartPoleBaseEnv(gymnasium.Env):
             raise FileNotFoundError(f"URDF file not found at {urdf_path}")
     
         self.cartpole_id = p.loadURDF(urdf_path, basePosition=[0, 0, 0.1])
+        init_cart_pos = np.random.uniform(-0.1, 0.1)    # Optional: randomize cart position
+        init_pole_angle = np.random.uniform(-0.05, 0.05)  # Or wider, e.g., (-0.5, 0.5) for swing-up
+
+        p.resetJointState(self.cartpole_id, 0, init_cart_pos, 0)   # Cart position
+        p.resetJointState(self.cartpole_id, 1, init_pole_angle, 0) # Pole angle
 
         p.setJointMotorControl2(self.cartpole_id, 0, p.VELOCITY_CONTROL, force=0)
         p.setJointMotorControl2(self.cartpole_id, 1, p.VELOCITY_CONTROL, force=0)
@@ -97,9 +102,12 @@ class CartPoleBaseEnv(gymnasium.Env):
 
     def _get_reward(self, obs):
         pole_angle = obs[0]
-        cart_velocity = obs[3]
-        # return 1.0 - (abs(pole_angle) / np.pi)
-        return -abs(pole_angle) - 0.1 * abs(cart_velocity)
+        cart_pos = obs[2]
+        theta_max = 0.5
+        x_max = 2.4
+        alpha = 0.1
+        bonus = 1 if abs(pole_angle) < 0.05 and abs(cart_pos) < 0.1 else 0
+        return 1 - (abs(pole_angle) / theta_max) - alpha * (abs(cart_pos) / x_max) + bonus
 
     def _is_done(self, obs):
         pole_angle = obs[0]

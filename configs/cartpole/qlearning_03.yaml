@@ -1,0 +1,17 @@
+# ===========================
+# Q-learning Config Set 3: Conservative, slow decay, coarse bins
+# ===========================
+learning_rate: 0.1
+gamma: 0.95
+epsilon: 1.0
+epsilon_decay: 0.997
+min_epsilon: 0.05
+bins: [8, 8, 4, 4]
+obs_low : [-2.4, -3.0, -0.418, -4.0]
+obs_high: [ 2.4,  3.0,  0.418,  4.0]
+total_episodes: 20000
+max_steps_per_episode: 500
+solved_reward: 475
+seed: 999
+eval_episodes: 100
+max_steps: 5000

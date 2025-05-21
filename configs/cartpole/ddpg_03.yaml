@@ -1,0 +1,17 @@
+# ===========================
+# DDPG Config Set 3: Small Buffer, Higher LR, Faster Target Update
+# ===========================
+policy: "MlpPolicy"
+learning_rate: 0.005         # Higher learning rate (actor, as in [2] and Table 1 [2])
+gamma: 0.98                  # Slightly lower gamma
+tau: 0.01                    # Faster target update (as in [1][2])
+batch_size: 32               # Smaller batch (as in [3])
+buffer_size: 10000           # Smaller buffer (as in Table 5.8 [3])
+train_freq: 1
+gradient_steps: 1
+total_timesteps: 300000
+seed: 999
+
+
+eval_episodes: 100
+max_steps: 5000

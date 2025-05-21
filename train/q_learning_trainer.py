@@ -16,7 +16,7 @@ from train.utils.callbacks import CustomCallback
 import pickle
 from train.utils.qtable import convert_q_table_to_dict
 register(
-    id="CartPole-v1",
+    id="CustomCartPole",
     entry_point="environments.cartpole:CartPoleDiscreteEnv",
     max_episode_steps=500,  # same as Gym CartPole
 )
@@ -42,7 +42,7 @@ class QLearningAgent:
         self.epsilon_decay = float(config.get("epsilon_decay"))
         self.min_epsilon = float(config.get("min_epsilon"))
 
-        self.bins = config.get("bins", [20, 20, 20, 20])
+        self.bins = config.get("bins")
         self.obs_low = np.array(config["obs_low"])
         self.obs_high = np.array(config["obs_high"])
         self.q_table = np.zeros(self.bins + [action_space])
@@ -72,7 +72,7 @@ def main():
     trainer = BaseTrainer(
         algo_name="Q-learning",
         config=config,
-        env_id="CartPole-v1",
+        env_id="CustomCartPole",
         run_name=None,
     )
     

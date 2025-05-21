@@ -28,9 +28,9 @@ config = load_config(args.config)
 print(config)
 
 register(
-    id="CartPole-v1",
+    id="CustomCartPole",
     entry_point="environments.cartpole:CartPoleContinuousEnv",
-    max_episode_steps=500,  # same as Gym CartPole
+    max_episode_steps=5000,  # same as Gym CartPole
 )
 
 # Define the initial noise parameters
@@ -42,7 +42,7 @@ def main():
     trainer = BaseTrainer(
         algo_name="SAC",
         config=config,
-        env_id="CartPole-v1",
+        env_id="CustomCartPole",
     )
     # Extract the environment's action space shape to define the action noise
     action_space_shape = trainer.env.action_space.shape

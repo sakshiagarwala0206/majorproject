@@ -1,0 +1,21 @@
+# =========================
+# PPO Training Config Set 2
+# =========================
+policy: "MlpPolicy"
+learning_rate: 0.001
+gamma: 0.98
+batch_size: 128
+n_steps: 1024
+ent_coef: 0.01
+clip_range: 0.3
+n_epochs: 5
+gae_lambda: 0.90
+max_grad_norm: 1.0
+vf_coef: 0.4
+device: "auto"
+total_timesteps: 300000
+seed: 123
+
+
+eval_episodes: 100
+max_steps: 5000

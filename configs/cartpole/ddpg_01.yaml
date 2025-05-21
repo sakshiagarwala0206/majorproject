@@ -1,0 +1,18 @@
+# ===========================
+# DDPG Config Set 1: Baseline
+# ===========================
+policy: "MlpPolicy"
+learning_rate: 0.001         # Actor and critic learning rate (as in [1] and Table 5.7/5.8/5.14/5.19 [3])
+gamma: 0.99                  # Discount factor
+tau: 0.001                   # Target network soft update rate (as in [1][3])
+batch_size: 96               # Minibatch size (as in [3])
+buffer_size: 50000           # Replay buffer size (as in [3])
+train_freq: 1                # Train every step
+gradient_steps: 1            # One gradient step per update
+total_timesteps: 300000      # Training steps (as in [3])
+seed: 42
+eval_episodes: 100
+max_steps: 5000
+
+
+

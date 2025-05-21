@@ -1,0 +1,23 @@
+# ===========================
+# Q-learning Config Set 1: Baseline (from recent literature)
+# ===========================
+learning_rate: 0.5
+gamma: 0.99
+epsilon: 1.0
+epsilon_decay: 0.995
+min_epsilon: 0.05
+bins: [12, 12, 6, 6]               # [cart_pos, cart_vel, pole_angle, pole_vel]
+obs_low : [-2.4, -3.0, -0.418, -4.0]
+obs_high: [ 2.4,  3.0,  0.418,  4.0]
+
+total_episodes: 2000
+max_steps_per_episode: 5000
+seed: 42
+
+
+eval_episodes: 100
+max_steps: 5000
+
+
+
+

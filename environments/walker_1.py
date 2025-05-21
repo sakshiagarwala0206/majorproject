@@ -65,13 +65,17 @@ class AssistiveWalkerBaseEnv(gymnasium.Env):
 
 
         # train angles
-        init_pole_angle = np.random.uniform(-0.05, 0.05)
-        init_left_wheel = np.random.uniform(-0.01, 0.01)
-        init_right_wheel = np.random.uniform(-0.01, 0.01)
+        # init_pole_angle = np.random.uniform(-0.2, 0.2)
+        # init_left_wheel = np.random.uniform(-0.1, 0.1)
+        # init_right_wheel = np.random.uniform(-0.1, 0.1)
 
         # init_pole_angle = np.random.uniform(-0.5, 0.5)
         # init_left_wheel = np.random.uniform(-0.2, 0.2)
         # init_right_wheel = np.random.uniform(-0.2, 0.2)
+
+        init_pole_angle = 0
+        init_left_wheel = 0
+        init_right_wheel = 0
 
         p.resetJointState(self.robot_id, 0, init_left_wheel, 0)   # left_wheel_joint
         p.resetJointState(self.robot_id, 1, init_right_wheel, 0)  # right_wheel_joint
@@ -135,11 +139,69 @@ class AssistiveWalkerBaseEnv(gymnasium.Env):
     def _is_done(self, obs):
         pole_angle = obs[0]
         base_x = obs[2]
-        return abs(pole_angle) > 0.5 or abs(base_x) > 2.0
+        return abs(pole_angle) > 0.3 or abs(base_x) > 2.0
 
     def close(self):
         p.disconnect()
 
+# class AssistiveWalkerDiscreteEnv(AssistiveWalkerBaseEnv):
+#     def __init__(self, render_mode=False, test_mode=False):
+#         super().__init__(render_mode=render_mode, test_mode=test_mode)
+#         # 7 original obs + 9 IMU = 16
+#         self.observation_space = spaces.Box(
+#             low=np.array(
+#                 [-np.pi, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf,   # original
+#                  -np.pi, -np.pi, -np.pi,   # IMU orientation (roll, pitch, yaw)
+#                  -np.inf, -np.inf, -np.inf,  # IMU angular velocity
+#                  -np.inf, -np.inf, -np.inf], # IMU linear acceleration
+#                 dtype=np.float32),
+#             high=np.array(
+#                 [np.pi, np.inf, np.inf, np.inf, np.inf, np.inf, np.inf,
+#                  np.pi, np.pi, np.pi,
+#                  np.inf, np.inf, np.inf,
+#                  np.inf, np.inf, np.inf],
+#                 dtype=np.float32
+#             ),
+#             dtype=np.float32
+#         )
+#         self.action_space = spaces.Discrete(3)  # 0: left, 1: right, 2: stop
+
+#     def step(self, action):
+#         torque = 0.7
+#         if action == 0:  # left
+#             left, right = -torque, torque
+#         elif action == 1:  # right
+#             left, right = torque, -torque
+#         else:  # stop
+#             left, right = 0.0, 0.0
+
+#         p.setJointMotorControl2(self.robot_id, 0, p.TORQUE_CONTROL, force=left)
+#         p.setJointMotorControl2(self.robot_id, 1, p.TORQUE_CONTROL, force=right)
+
+#         p.stepSimulation()
+#         self.current_step += 1
+
+#         obs = self._get_obs()
+#         reward = self._get_reward(obs)
+#         terminated = self._is_done(obs)
+#         truncated = False
+
+#         # Example: Log IMU data to WandB (if enabled)
+#         if WANDB_AVAILABLE:
+#             wandb.log({
+#                 "imu_roll": obs[7],
+#                 "imu_pitch": obs[8],
+#                 "imu_yaw": obs[9],
+#                 "imu_ang_vel_x": obs[10],
+#                 "imu_ang_vel_y": obs[11],
+#                 "imu_ang_vel_z": obs[12],
+#                 "imu_lin_acc_x": obs[13],
+#                 "imu_lin_acc_y": obs[14],
+#                 "imu_lin_acc_z": obs[15],
+#                 "step": self.current_step
+#             })
+
+#         return obs, reward, terminated, truncated, {}
 class AssistiveWalkerDiscreteEnv(AssistiveWalkerBaseEnv):
     def __init__(self, render_mode=False, test_mode=False):
         super().__init__(render_mode=render_mode, test_mode=test_mode)
@@ -160,44 +222,45 @@ class AssistiveWalkerDiscreteEnv(AssistiveWalkerBaseEnv):
             ),
             dtype=np.float32
         )
-        self.action_space = spaces.Discrete(3)  # 0: left, 1: right, 2: stop
+        self.action_space = spaces.Discrete(3)
 
     def step(self, action):
         torque = 0.7
-        if action == 0:  # left
+        if action == 0:
             left, right = -torque, torque
-        elif action == 1:  # right
+        elif action == 1:
             left, right = torque, -torque
-        else:  # stop
+        else:
             left, right = 0.0, 0.0
 
         p.setJointMotorControl2(self.robot_id, 0, p.TORQUE_CONTROL, force=left)
         p.setJointMotorControl2(self.robot_id, 1, p.TORQUE_CONTROL, force=right)
-
         p.stepSimulation()
         self.current_step += 1
 
-        obs = self._get_obs()
-        reward = self._get_reward(obs)
-        terminated = self._is_done(obs)
+        obs_full = self._get_obs()
+        obs_agent = obs_full[:7]
+        reward = self._get_reward(obs_full)
+        terminated = self._is_done(obs_full)
         truncated = False
 
-        # Example: Log IMU data to WandB (if enabled)
+        # Log IMU data to WandB (if enabled)
         if WANDB_AVAILABLE:
             wandb.log({
-                "imu_roll": obs[7],
-                "imu_pitch": obs[8],
-                "imu_yaw": obs[9],
-                "imu_ang_vel_x": obs[10],
-                "imu_ang_vel_y": obs[11],
-                "imu_ang_vel_z": obs[12],
-                "imu_lin_acc_x": obs[13],
-                "imu_lin_acc_y": obs[14],
-                "imu_lin_acc_z": obs[15],
+                "imu_roll": obs_full[7],
+                "imu_pitch": obs_full[8],
+                "imu_yaw": obs_full[9],
+                "imu_ang_vel_x": obs_full[10],
+                "imu_ang_vel_y": obs_full[11],
+                "imu_ang_vel_z": obs_full[12],
+                "imu_lin_acc_x": obs_full[13],
+                "imu_lin_acc_y": obs_full[14],
+                "imu_lin_acc_z": obs_full[15],
                 "step": self.current_step
             })
 
-        return obs, reward, terminated, truncated, {}
+        info = {"imu": obs_full[7:]}
+        return obs_agent, reward, terminated, truncated, info
 
 class AssistiveWalkerContinuousEnv(AssistiveWalkerBaseEnv):
     def __init__(self, render_mode=False, test_mode=False):
@@ -218,7 +281,7 @@ class AssistiveWalkerContinuousEnv(AssistiveWalkerBaseEnv):
             ),
             dtype=np.float32
         )
-        self.action_space = spaces.Box(low=np.array([-1.0, -1.0]), high=np.array([5.0, 5.0]), dtype=np.float32)
+        self.action_space = spaces.Box(low=np.array([-5.0, -5.0]), high=np.array([5.0, 5.0]), dtype=np.float32)
 
     def step(self, action):
         action = np.array(action, dtype=float).flatten()
@@ -235,6 +298,7 @@ class AssistiveWalkerContinuousEnv(AssistiveWalkerBaseEnv):
         reward = self._get_reward(obs)
         terminated = self._is_done(obs)
         truncated = False
+        
 
         # Example: Log IMU data to WandB (if enabled)
         if WANDB_AVAILABLE:

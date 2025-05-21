@@ -4,7 +4,7 @@ import argparse
 import numpy as np
 import gymnasium as gym
 from datetime import datetime
-from stable_baselines3 import PPO
+from stable_baselines3 import DDPG
 from gymnasium.envs.registration import register
 
 # Project-specific imports
@@ -13,10 +13,11 @@ from train.base_trainer import BaseTrainer
 from train.utils.callbacks import CustomCallback
 from train.utils.logger import setup_logger
 from train.utils.config_loader import load_config
-import environments.cartpole  # Ensure this import is valid
-
-
+import environments.walker
+from train.base_trainer import StopTrainingOnPatience
 logger = setup_logger()
+
+import wandb
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--config', type=str, required=True, help='Path to config file')
@@ -27,11 +28,10 @@ config = load_config(args.config)
 
 # Register custom environment
 register(
-    id="InclinedCartPole",
-    entry_point="environments.cartpole:CartPoleContinuousEnv",
-    max_episode_steps=5000,
+    id="AssistiveWalkerContinuousEnv-v0",
+    entry_point="environments.walker_1:AssistiveWalkerContinuousEnv",
+    max_episode_steps=10000,
 )
-
 
 class ActionNoiseWrapper(gym.ActionWrapper):
     """Adds Gaussian noise to actions and logs how much noise was added."""
@@ -48,7 +48,6 @@ class ActionNoiseWrapper(gym.ActionWrapper):
         noisy_action = action + noise
         clipped_action = np.clip(noisy_action, self.action_space.low, self.action_space.high)
 
-        # Log the noise and the difference from the clean action
         self.logger.info(f"Noise Level: {self.current_noise:.4f}, "
                          f"Original Action: {action}, "
                          f"Noise: {noise}, "
@@ -60,50 +59,63 @@ class ActionNoiseWrapper(gym.ActionWrapper):
         self.current_noise = max(self.current_noise * self.decay_rate, self.min_noise)
         return self.env.step(action)
 
-
 def main():
     trainer = BaseTrainer(
-        algo_name="PPO",
+        algo_name="DDPG",
         config=config,
-        env_id="InclinedCartPole",
+        env_id="AssistiveWalkerContinuousEnv-v0",
         run_name=None,
+    )
+
+    # Initialize wandb for online logging
+    wandb.init(
+        project=trainer.wandb_config.wandb_project,
+        entity=getattr(trainer.wandb_config, "wandb_entity", None),
+        config=vars(trainer.wandb_config),
+        sync_tensorboard=True,
+        mode="online"
     )
 
     # Wrap environment with noise wrapper
     noisy_env = ActionNoiseWrapper(trainer.env)
-
-
-    # Replace trainer.env with wrapped one to keep consistency
     trainer.env = noisy_env
 
-    model = PPO(
+    # Initialize DDPG with parameters from config
+    model = DDPG(
         policy=trainer.wandb_config.policy,
         env=noisy_env,
         verbose=1,
         learning_rate=float(trainer.wandb_config.learning_rate),
-        gamma=trainer.wandb_config.gamma,
+        buffer_size=trainer.wandb_config.buffer_size,
+        learning_starts=trainer.wandb_config.learning_starts,
         batch_size=trainer.wandb_config.batch_size,
+        tau=trainer.wandb_config.tau,
+        gamma=trainer.wandb_config.gamma,
         tensorboard_log=f"./{trainer.algo_name.lower()}_tensorboard/",
     )
 
-    logger.info("🚀 Starting PPO training with action noise and noise logging...")
-    model.learn(total_timesteps=trainer.wandb_config.total_timesteps, callback=trainer.get_callbacks())
+    logger.info("🚀 Starting DDPG training with action noise and noise logging...")
+    patience_callback = StopTrainingOnPatience(min_improvement=1.0, patience=200000)
+    callbacks = [patience_callback] + list(trainer.get_callbacks())
+    model.learn(
+        total_timesteps=trainer.wandb_config.total_timesteps,
+        callback=callbacks,
+        log_interval=4
+    )
 
-    # Save trained model
+    # Save only the final trained model (policy and weights, no replay buffer or optimizer)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    model_path = f"./models/{trainer.algo_name.lower()}/{trainer.algo_name.lower()}_{timestamp}_cartpole_final"
-    model.save(model_path)
-    logger.info(f"✅ PPO model saved at {model_path}")
+    model_path = f"./models/{trainer.algo_name.lower()}/{trainer.algo_name.lower()}_{timestamp}_assistivewalker_final"
+    model.save(model_path, exclude=["replay_buffer", "optimizer"])
+    logger.info(f"✅ DDPG model saved at {model_path}")
 
-    # Log convergence episode if it exists
-    if trainer.custom_callback.convergence_episode is not None:
-        import wandb
+    # Log convergence episode to wandb (if available)
+    if hasattr(trainer, "custom_callback") and getattr(trainer.custom_callback, "convergence_episode", None) is not None:
         wandb.log({"Convergence Episode": trainer.custom_callback.convergence_episode})
         logger.info(f"📈 Convergence Episode logged to WandB: {trainer.custom_callback.convergence_episode}")
 
     trainer.finish()
-
+    wandb.finish()
 
 if __name__ == "__main__":
     main()
-

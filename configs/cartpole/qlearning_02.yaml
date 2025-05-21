@@ -1,0 +1,17 @@
+# ===========================
+# Q-learning Config Set 2: Fast decay, fine discretization
+# ===========================
+learning_rate: 0.3
+gamma: 0.98
+epsilon: 1.0
+epsilon_decay: 0.99
+min_epsilon: 0.01
+bins: [16, 16, 8, 8]
+obs_low : [-2.4, -3.0, -0.418, -4.0]
+obs_high: [ 2.4,  3.0,  0.418,  4.0]
+total_episodes: 3000
+max_steps_per_episode: 10000
+solved_reward: 475
+seed: 123
+eval_episodes: 100
+max_steps: 5000

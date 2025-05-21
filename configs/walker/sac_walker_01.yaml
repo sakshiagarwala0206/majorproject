@@ -5,5 +5,12 @@ buffer_size: 1000000
 learning_starts: 100
 batch_size: 256
 tau: 0.005
+ent_coef: "auto"
 use_sde: True
+train_freq: 1
+gradient_steps: 1
+target_update_interval: 1
+action_noise: 0.1
 total_timesteps: 300000
+wandb_project: "assistive-walker-sac"
+device: "auto"

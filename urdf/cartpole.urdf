@@ -32,6 +32,14 @@
           <box size="0.5 0.5 0.2"/>
       </geometry>
       <origin xyz="0 0 0"/>
+      <surface>
+      <friction>
+        <ode mu="0.7" mu2="0.5"/>
+      </friction>
+      <contact>
+        <ode kp="1e7" kd="1e3"/>
+      </contact>
+    </surface>
     </collision>
     <inertial>
       <mass value="4"/>

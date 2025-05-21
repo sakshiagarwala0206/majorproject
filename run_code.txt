@@ -50,3 +50,36 @@ python test/test_mouse_walker_ppo.py --model_path models/ppo/ppo_20250509_123809
 python test/test_aswalker_ppo.py --config configs/ppo_walker.yaml --model_path models/ppo/BaseConfig_PPO_AW_01.zip --use_wandb
 
 python train/sac_walker.py --config configs/sac_walker_01.yaml
+
+python train/ddpg_walker.py --config configs/ddpg_walker_01.yaml
+
+python test/test_aswalker_ddpg.py --config configs/ddpg_walker_01.yaml --model_path models/ddpg/ddpg_20250514_183020_assistivewalker_final.zip --use_wandb
+
+models/sac/sac_20250514_175434_assistivewalker_final.zip
+
+models/sac/sac_20250514_190707_assistivewalker_final.zip
+
+models/sac/sac_20250515_022552_assistivewalker_final.zip
+
+test/test_aswalker_sac.py
+
+python test/test_aswalker_sac.py --config configs/sac_walker_03.yaml --model_path models/sac/sac_20250515_022552_assistivewalker_final.zip --use_wandb
+
+python train/qlearning_walker.py --config configs/qlearning_config_01.yaml
+
+python train/pid_walker.py --config configs/pid_configs_01.yaml
+
+python test/test_aswalker_qlearning.py --config configs/qlearning_config_01.yaml --model_path models/q-learning/qlearning_001.pkl --use_wandb
+
+
+
+#cartpole terminal codes
+
+python train/ppo_trainer.py --config configs/cartpole/ppo_01.yaml 
+
+python test/cartpole/test_ppo.py --config configs/cartpole/ppo_03.yaml --model_path models/ppo/Config_03_PPO/model.zip --use_wandb
+python test/cartpole/test_ppo.py --config configs/cartpole/ppo_02.yaml --model_path models/ppo/Config_02_PPO/model.zip --use_wandb
+python test/cartpole/test_ppo.py --config configs/cartpole/ppo_01.yaml --model_path models/ppo/Config_01_PPO/model.zip --use_wandb
+python test/cartpole/test_sac.py --config configs/cartpole/ppo_01.yaml --model_path models/ppo/Config_01_PPO/model.zip --use_wandb
+
+python test/mouse_walker.py

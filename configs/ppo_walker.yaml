@@ -1,21 +1,13 @@
-# PPO Training Config for Assistive Walker
 policy: "MlpPolicy"
 learning_rate: 0.0003
-gamma: 0.99
-batch_size: 64
 n_steps: 2048
-ent_coef: 0.01
 clip_range: 0.2
+batch_size: 64
 n_epochs: 10
+gamma: 0.99
 gae_lambda: 0.95
+ent_coef: 0.0
 max_grad_norm: 0.5
 vf_coef: 0.5
 device: "auto"
 total_timesteps: 1000000
-
-# Action noise for exploration (if using continuous actions)
-action_noise: 0.1
-
-# Optional logging settings
-wandb_project: "assistive-walker-ppo"
-wandb_entity: "your_wandb_entity"
