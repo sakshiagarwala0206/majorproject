@@ -75,11 +75,52 @@ python test/test_aswalker_qlearning.py --config configs/qlearning_config_01.yaml
 
 #cartpole terminal codes
 
-python train/ppo_trainer.py --config configs/cartpole/ppo_01.yaml 
+python train/ppo_trainer.py --config configs/cartpole/ppo_01.yaml
+python train/ppo_trainer.py --config configs/cartpole/ppo_02.yaml  
+python train/ppo_trainer.py --config configs/cartpole/ppo_03.yaml 
+python train/sac_trainer.py --config configs/cartpole/sac_01.yaml 
+python train/sac_trainer.py --config configs/cartpole/sac_02.yaml 
+python train/ddpg_trainer.py --config configs/cartpole/ddpg_01.yaml 
+python train/ddpg_trainer.py --config configs/cartpole/ddpg_02.yaml 
 
-python test/cartpole/test_ppo.py --config configs/cartpole/ppo_03.yaml --model_path models/ppo/Config_03_PPO/model.zip --use_wandb
-python test/cartpole/test_ppo.py --config configs/cartpole/ppo_02.yaml --model_path models/ppo/Config_02_PPO/model.zip --use_wandb
-python test/cartpole/test_ppo.py --config configs/cartpole/ppo_01.yaml --model_path models/ppo/Config_01_PPO/model.zip --use_wandb
+python train/q_learning_trainer.py --config configs/cartpole/qlearning_01.yaml
+python train/q_learning_trainer.py --config configs/cartpole/qlearning_02.yaml
+python train/q_learning_trainer.py --config configs/cartpole/qlearning_03.yaml
+python train/q_learning_trainer.py --config configs/cartpole/qlearning_04.yaml
+python train/q_learning_trainer.py --config configs/cartpole/qlearning_05.yaml
+
+python test/test_ppo.py --config configs/cartpole/ppo_03.yaml --model_path models/ppo/Config_03_PPO/model.zip --use_wandb
+python test/test_ppo.py --config configs/cartpole/ppo_02.yaml --model_path models/ppo/Config_02_PPO_cartpole_final/model.zip --use_wandb
+python test/test_ppo.py --config configs/cartpole/ppo_01.yaml --model_path final_model/ppo/Config1_PPO_Cartpole.zip --use_wandb
 python test/cartpole/test_sac.py --config configs/cartpole/ppo_01.yaml --model_path models/ppo/Config_01_PPO/model.zip --use_wandb
 
+python test/test_qlearning.py --config configs/cartpole/qlearning_01.yaml --model_path final_model/q-learning/Config_01_Cartpole_qlearning.pkl --use_wandb
+
 python test/mouse_walker.py
+
+
+
+#assistivealker terminal codes
+
+python train/ppo_walker.py --config configs/ppo_01.yaml
+
+python test/test_aswalker_ppo.py --config configs/ppo_01.yaml --model_path models/sac/sac_20250515_022552_assistivewalker_final.zip --use_wandb
+
+python train/qlearning_walker.py --config configs/walker/qlearning_config_01.yaml
+
+python train/ppo_walker.py --config configs/walker/ppo_01.yaml
+
+
+
+python test/test_walker_ppo.py --config configs/walker/ppo_01.yaml --model_path final_model/ppo/PPO_Walker_01.zip --use_wandb
+final_model/q-learning/qlearning_aswalker_02.pkl
+
+python test/test_aswalker_qlearning.py --config cconfigs/walker/qlearning_config_01.yaml --model_path final_model/q-learning/qlearning_aswalker_02.pkl --use_wandb
+
+
+python test/pid_walker.py --config configs/walker/pid_configs_01.yaml
+
+
+python train/qlearning_walker.py --config configs/walker/qlearning_config_01.yaml
+python train/qlearning_walker.py --config configs/walker/qlearning_config_02.yaml
+python train/qlearning_walker.py --config configs/walker/qlearning_config_03.yaml

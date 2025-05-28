@@ -13,11 +13,10 @@ import random
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), './')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
-# from environments.cartpole import CartPoleContinuousEnv
+from environments.cartpole import CartPoleContinuousEnv
 from controllers.drl_controller import DRLController
 from train.utils.logger import setup_logger
-from stable_baselines3 import PPO
+from stable_baselines3 import SAC
 
 logger = setup_logger()
 
@@ -38,36 +37,36 @@ def get_convergence_time(rewards, threshold=0.95):
     return len(rewards)
 
 def get_avg_reward(rewards):
-    return float(np.mean(rewards))
+    return np.mean(rewards)
 
-def get_overshoot(angles, target_angle=0.0):
-    return float(max(abs(a - target_angle) for a in angles))
+def get_overshoot(angles, target_angle=0):
+    return max(abs(angle - target_angle) for angle in angles) if angles else 0.0
 
-def get_settling_time(times, angles, target_angle=0.0, tolerance=0.05):
-    for t, a in zip(times, angles):
-        if abs(a - target_angle) <= tolerance:
-            return float(t)
-    return float(max(times))
+def get_settling_time(times, angles, target_angle=0, tolerance=0.05):
+    for t, angle in zip(times, angles):
+        if abs(angle - target_angle) <= tolerance:
+            return t
+    return max(times) if times else 0
 
-def get_fall_rate(fall_count, total_episodes):
-    return float((fall_count / total_episodes) * 100)
+def get_fall_rate(falls, total_episodes):
+    return (falls / total_episodes) * 100
 
-def get_energy(forces):
+def get_energy(torques):
     flat = []
-    for v in forces:
+    for v in torques:
         try:
             vals = list(v)
         except TypeError:
             vals = [v]
         flat.extend([abs(x) for x in vals])
-    return float(sum(flat))
+    return np.sum(flat)
 
 def get_smoothness(angles, time_steps):
-    jerks = np.diff(angles) / np.diff(time_steps)
-    return float(np.mean(np.abs(jerks))) if len(jerks) > 0 else 0.0
+    jerks = np.diff(angles) / np.diff(time_steps) if len(angles) > 1 else [0.0]
+    return np.mean(np.abs(jerks)) if len(jerks) > 0 else 0.0
 
-def get_robustness(rewards):
-    return float(np.std(rewards))
+def get_robustness(performances):
+    return np.std(performances)
 
 def evaluate_controller(
     env, controller, num_episodes, max_steps,
@@ -172,20 +171,22 @@ def evaluate_controller(
     )
 
 
+# 🚀 Main testing entrypoint
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str, required=True, help="Path to config.yaml")
-    parser.add_argument('--model_path', type=str, required=True, help="Path to PPO model (.zip)")
-    parser.add_argument('--use_wandb', action='store_true', help="Log results to wandb")
+    parser.add_argument('--config', type=str, required=True, help="Path to controller config file")
+    parser.add_argument('--model_path', type=str, required=True, help="Path to SAC model (.zip)")
+    parser.add_argument('--model_type', type=str, required=True, choices=['DQN', 'DDPG', 'SAC', 'PPO'], help="Model type (DQN, DDPG, SAC, PPO)")
+    parser.add_argument('--use_wandb', action='store_true', help="Enable wandb logging")
     args = parser.parse_args()
 
     config = load_config(args.config)
 
     if args.use_wandb:
         wandb.init(
-            project="cartpole-eval-DRL",
+            project="Cartpole_test_final",
             config=vars(config),
-            name=f"eval_PPO_{datetime.now():%Y%m%d_%H%M%S}",
+            name=f"eval_SAC_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
         )
 
     env = gymnasium.make("CustomCartPole", render_mode="human", test_mode=True)
@@ -194,19 +195,19 @@ if __name__ == "__main__":
     np.random.seed(config.seed)
     random.seed(config.seed)
 
-    model = PPO.load(args.model_path)
-    controller = DRLController(model, "PPO", action_space=env.action_space)
+    model = SAC.load(args.model_path)
+    model_type = args.model_type
+    controller = DRLController(model, model_type, action_space=env.action_space)
 
-    logger.info(f"🔍 Evaluating PPO controller...")
+    logger.info(f"🔍 Evaluating SAC controller...")
 
-    (rewards, metrics, overshoots, settling_times, energy_list, smoothness_list,
+    (rewards, metrics, overshoots, settling_times, energy, smoothness,
      all_cart_pos, all_cart_vel, all_pole_angle, all_pole_vel, all_actions) = \
         evaluate_controller(env, controller, config.eval_episodes, config.max_steps)
-    mean_reward = float(np.mean(rewards))
+    mean_reward = np.mean(rewards)
 
     logger.info(f"📊 Mean reward over {config.eval_episodes} episodes: {mean_reward}")
 
-    # 🗃️ Log to WandB if enabled
     if args.use_wandb:
         data = []
         for ep in range(len(rewards)):
@@ -215,8 +216,8 @@ if __name__ == "__main__":
                 float(rewards[ep]),
                 float(overshoots[ep]),
                 float(settling_times[ep]),
-                float(energy_list[ep]),
-                float(smoothness_list[ep]),
+                float(energy[ep]),
+                float(smoothness[ep]),
                 float(np.mean(all_cart_pos[ep]) if all_cart_pos[ep] else 0),
                 float(np.mean(all_cart_vel[ep]) if all_cart_vel[ep] else 0),
                 float(np.mean(all_pole_angle[ep]) if all_pole_angle[ep] else 0),

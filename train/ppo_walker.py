@@ -29,8 +29,8 @@ config = load_config(args.config)
 # Register custom environment
 register(
     id="AssistiveWalkerContinuousEnv-v0",
-    entry_point="environments.walker_1:AssistiveWalkerContinuousEnv",
-    max_episode_steps=10000,
+    entry_point="environments.walker:AssistiveWalkerContinuousEnv",
+    max_episode_steps=5000,
 )
 
 class ActionNoiseWrapper(gym.ActionWrapper):
@@ -70,7 +70,8 @@ def main():
 
     # Wrap environment with noise wrapper
     noisy_env = ActionNoiseWrapper(trainer.env)
-
+    seed = config.get("seed")
+    noisy_env.reset(seed=seed)
     # Replace trainer.env with wrapped one to keep consistency
     trainer.env = noisy_env
 
@@ -89,7 +90,7 @@ def main():
 
     # Save trained model
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    model_path = f"./models/{trainer.algo_name.lower()}/{trainer.algo_name.lower()}_{timestamp}_assistivewalker_final"
+    model_path = f"./final_model/{trainer.algo_name.lower()}/{trainer.algo_name.lower()}_{timestamp}_assistivewalker_final"
     model.save(model_path)
     logger.info(f"✅ PPO model saved at {model_path}")
 

@@ -30,7 +30,7 @@ args = parser.parse_args()
 config = load_config(args.config)
 
 # 🟡 Init wandb
-wandb.init(project=config.get("wandb_project", "Q-Learning-CartPole"), config=config)
+wandb.init(project=config.get("wandb_project", "Final_Q_learning_cartpole"), config=config)
 
 class QLearningAgent:
     def __init__(self, state_space, action_space, config):
@@ -142,8 +142,8 @@ def main():
 
     # Save the converted Q-table dictionary to file
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    os.makedirs(f"./models/{trainer.algo_name.lower()}/", exist_ok=True)
-    model_path = f"./models/{trainer.algo_name.lower()}/{trainer.algo_name.lower()}_{timestamp}_agent.pkl"
+    os.makedirs(f"./final_model/{trainer.algo_name.lower()}/", exist_ok=True)
+    model_path = f"./final_model/{trainer.algo_name.lower()}/{trainer.algo_name.lower()}_{timestamp}_agent.pkl"
     with open(model_path, "wb") as f:
         pickle.dump(q_table_dict, f)
     logger.info(f"✅ Q-learning agent saved at {model_path}")

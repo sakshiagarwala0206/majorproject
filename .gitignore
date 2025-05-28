@@ -51,3 +51,6 @@ models/
 dqn_tesnorboard/
 
 balance-robot-mujoco-rl/
+
+final_model/
+ppo_tensorboard/

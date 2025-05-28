@@ -1,0 +1,15 @@
+policy: "MlpPolicy"
+learning_rate: 0.0005
+gamma: 0.97
+gae_lambda: 0.92
+batch_size: 64
+n_epochs: 8
+clip_range: 0.25
+net_arch: [64, 64]
+ent_coef: 0.05
+max_grad_norm: 1.0
+use_sde: False
+policy_kwargs:
+  ortho_init: True
+  log_std_init: 0.0
+total_timesteps: 1500000

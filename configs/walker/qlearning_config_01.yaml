@@ -9,10 +9,11 @@ epsilon: 1.0
 epsilon_decay: 0.999
 min_epsilon: 0.05
 
-bins: [8, 8, 8, 8, 8, 8, 8]
+bins: [12, 12, 12, 12, 12, 12, 12]
 obs_low: [-3.14, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0]
 obs_high: [3.14, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
 
 total_episodes: 5000
 max_steps_per_episode: 1000
-solved_reward: 400
+solved_reward: 1000
+seed: 49

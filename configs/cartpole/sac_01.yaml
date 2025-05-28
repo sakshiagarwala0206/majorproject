@@ -13,7 +13,7 @@ train_freq: 1
 gradient_steps: 1
 use_sde: False
 device: "auto"
-total_timesteps: 300000
+total_timesteps: 3000000
 
 
 seed: 423

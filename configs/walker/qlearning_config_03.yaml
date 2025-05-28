@@ -1,18 +1,17 @@
-#Fast Training (Aggressive Exploration, Fewer Episodes)
-
 wandb_project: "Q-Learning-AssistiveWalker"
 wandb_entity: "your_wandb_team"
 
-learning_rate: 0.2
+learning_rate: 0.08
 gamma: 0.97
-epsilon: 0.8
-epsilon_decay: 0.995
-min_epsilon: 0.10
+epsilon: 1.0
+epsilon_decay: 0.9995
+min_epsilon: 0.1
 
 bins: [8, 8, 8, 8, 8, 8, 8]
-obs_low: [-3.14, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0]
-obs_high: [3.14, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
+obs_low: [-3.14, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5]
+obs_high: [3.14, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5]
 
-total_episodes: 2000
+total_episodes: 4000
 max_steps_per_episode: 800
-solved_reward: 350
+solved_reward: 900
+seed: 21

@@ -1,17 +1,17 @@
-#Different Bin Discretization (Coarse State Representation)
-
 wandb_project: "Q-Learning-AssistiveWalker"
+wandb_entity: "your_wandb_team"
 
-learning_rate: 0.1
+learning_rate: 0.09
 gamma: 0.99
 epsilon: 1.0
-epsilon_decay: 0.999
-min_epsilon: 0.05
+epsilon_decay: 0.9992
+min_epsilon: 0.03
 
-bins: [4, 6, 6, 4, 4, 4, 4]  # Fewer bins for some dimensions
-obs_low: [-3.14, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0]
-obs_high: [3.14, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
+bins: [14, 14, 14, 14, 14, 14, 14]
+obs_low: [-3.5, -3.0, -3.0, -3.0, -3.0, -3.0, -3.0]
+obs_high: [3.5, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0]
 
-total_episodes: 5000
-max_steps_per_episode: 1000
-solved_reward: 400
+total_episodes: 8000
+max_steps_per_episode: 1200
+solved_reward: 1100
+seed: 99

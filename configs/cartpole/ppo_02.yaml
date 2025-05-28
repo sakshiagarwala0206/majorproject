@@ -13,9 +13,9 @@ gae_lambda: 0.90
 max_grad_norm: 1.0
 vf_coef: 0.4
 device: "auto"
-total_timesteps: 300000
+total_timesteps: 1000000
 seed: 123
-
+policy_kwargs: dict(net_arch=[256, 256, 256, 256])
 
 eval_episodes: 100
 max_steps: 5000

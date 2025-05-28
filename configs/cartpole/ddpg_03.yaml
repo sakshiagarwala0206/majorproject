@@ -9,7 +9,7 @@ batch_size: 32               # Smaller batch (as in [3])
 buffer_size: 10000           # Smaller buffer (as in Table 5.8 [3])
 train_freq: 1
 gradient_steps: 1
-total_timesteps: 300000
+total_timesteps: 3000000
 seed: 999
 
 

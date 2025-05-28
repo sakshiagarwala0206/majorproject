@@ -91,7 +91,7 @@ def main():
 
     # Save trained model
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    model_path = f"./models/{trainer.algo_name.lower()}/{trainer.algo_name.lower()}_{timestamp}_cartpole_final"
+    model_path = f"./final_model/{trainer.algo_name.lower()}/{trainer.algo_name.lower()}_{timestamp}_cartpole_final"
     model.save(model_path)
     logger.info(f"✅ PPO model saved at {model_path}")
 

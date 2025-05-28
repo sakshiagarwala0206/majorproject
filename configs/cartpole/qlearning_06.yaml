@@ -1,0 +1,26 @@
+# CartPole Q-learning config to reduce unseen states
+
+# Discretization: Use fewer bins per state variable
+bins: [8, 8, 8, 8]  # Reduce from 10 or more to 8 or fewer per variable
+
+# State normalization (ensure these match training and evaluation)
+obs_low: [-2.4, -3.0, -0.2095, -2.0]   # Cart position, velocity, pole angle (rads), pole velocity
+obs_high: [2.4, 3.0, 0.2095, 2.0]
+
+# Q-learning hyperparameters
+learning_rate: 0.5
+gamma: 0.99
+epsilon: 1.0
+epsilon_decay: 0.995   # Slower decay for more exploration
+min_epsilon: 0.05
+
+# Training duration
+total_episodes: 20000  # Increase to ensure more coverage of state space
+max_steps_per_episode: 500
+
+# Evaluation
+eval_episodes: 100
+max_steps: 500
+
+# Reward threshold for solving
+solved_reward: 475

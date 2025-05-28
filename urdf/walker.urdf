@@ -11,7 +11,7 @@
     <visual>
       <origin xyz="0 0 0.12"/>
       <geometry>
-        <box size="0.3 0.5 0.24"/>
+        <box size="0.3 0.50 0.24"/>
       </geometry>
       <material name="blue">
         <color rgba="0 0 1 1"/>
@@ -20,7 +20,7 @@
     <collision>
       <origin xyz="0 0 0.12"/>
       <geometry>
-        <box size="0.3 0.5 0.24"/>
+        <box size="0.3 0.50 0.24"/>
       </geometry>
       <surface>
         <friction>
@@ -51,11 +51,6 @@
       <geometry>
         <cylinder radius="0.15" length="0.08"/>
       </geometry>
-      <surface>
-        <friction>
-          <ode mu="1.2" mu2="0.8"/>
-        </friction>
-      </surface>
     </collision>
   </link>
 
@@ -80,11 +75,6 @@
       <geometry>
         <cylinder radius="0.15" length="0.08"/>
       </geometry>
-      <surface>
-        <friction>
-          <ode mu="1.2" mu2="0.8"/>
-        </friction>
-      </surface>
     </collision>
   </link>
 

@@ -1,16 +1,17 @@
-# Different Learning Rate (Ablation Study)
 wandb_project: "Q-Learning-AssistiveWalker"
+wandb_entity: "your_wandb_team"
 
-learning_rate: 0.01
-gamma: 0.99
+learning_rate: 0.15
+gamma: 0.98
 epsilon: 1.0
-epsilon_decay: 0.998
-min_epsilon: 0.05
+epsilon_decay: 0.990
+min_epsilon: 0.01
 
-bins: [8, 8, 8, 8, 8, 8, 8]
-obs_low: [-3.14, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0]
-obs_high: [3.14, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
+bins: [10, 10, 10, 10, 10, 10, 10]
+obs_low: [-3.14, -2.2, -2.2, -2.2, -2.2, -2.2, -2.2]
+obs_high: [3.14, 2.2, 2.2, 2.2, 2.2, 2.2, 2.2]
 
 total_episodes: 7000
 max_steps_per_episode: 1000
-solved_reward: 400
+solved_reward: 1050
+seed: 7

@@ -69,7 +69,7 @@ def main():
 
     import datetime
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    model.save(f"./models/{trainer.algo_name.lower()}/{trainer.algo_name.lower()}_{timestamp}_cartpole_final")
+    model.save(f"./final_model/{trainer.algo_name.lower()}/{trainer.algo_name.lower()}_{timestamp}_cartpole_final")
     logger.info("✅ SAC model saved.")
     
     if trainer.custom_callback.convergence_episode is not None:

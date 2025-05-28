@@ -52,8 +52,8 @@ class CartPoleBaseEnv(gymnasium.Env):
             raise FileNotFoundError(f"URDF file not found at {urdf_path}")
     
         self.cartpole_id = p.loadURDF(urdf_path, basePosition=[0, 0, 0.1])
-        init_cart_pos = np.random.uniform(-0.1, 0.1)    # Optional: randomize cart position
-        init_pole_angle = np.random.uniform(-0.05, 0.05)  # Or wider, e.g., (-0.5, 0.5) for swing-up
+        init_cart_pos = np.random.uniform(-0.3, 0.3)    # Optional: randomize cart position
+        init_pole_angle = np.random.uniform(-0.5, 0.5)  # Or wider, e.g., (-0.5, 0.5) for swing-up
 
         p.resetJointState(self.cartpole_id, 0, init_cart_pos, 0)   # Cart position
         p.resetJointState(self.cartpole_id, 1, init_pole_angle, 0) # Pole angle
@@ -112,7 +112,7 @@ class CartPoleBaseEnv(gymnasium.Env):
     def _is_done(self, obs):
         pole_angle = obs[0]
         cart_position = obs[2]
-        return abs(pole_angle) > 0.5 or abs(cart_position) > 2.4
+        return abs(pole_angle) > 0.418 or abs(cart_position) > 2.4
 
     def close(self):
         p.disconnect()
@@ -161,7 +161,7 @@ class CartPoleDiscreteEnv(CartPoleBaseEnv):
 class CartPoleContinuousEnv(CartPoleBaseEnv):
     def __init__(self, render_mode=False, test_mode=False):
         super().__init__(render_mode=render_mode, test_mode=test_mode)
-        self.action_space = spaces.Box(low=np.array([-5.0, -5.0]), high=np.array([5.0, 5.0]), dtype=np.float32)
+        self.action_space = spaces.Box(low=np.array([-10.0, -10.0]), high=np.array([10.0, 10.0]), dtype=np.float32)
         self.observation_space = spaces.Box(
             low=np.array([-np.pi, -np.inf, -np.inf, -np.inf], dtype=np.float32),
             high=np.array([np.pi, np.inf, np.inf, np.inf], dtype=np.float32),

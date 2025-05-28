@@ -5,14 +5,14 @@
 learning_rate: 0.9
 gamma: 0.90
 epsilon: 1.0
-epsilon_decay: 0.98
+epsilon_decay: 0.999
 min_epsilon: 0.01
 bins: [20, 20, 10, 10]
 obs_low : [-2.4, -3.0, -0.418, -4.0]
 obs_high: [ 2.4,  3.0,  0.418,  4.0]
-total_episodes: 15000
-max_steps_per_episode: 5000
+total_episodes: 30000
+max_steps_per_episode: 500
 solved_reward: 475
 seed: 2025
 eval_episodes: 100
-max_steps: 5000
+max_steps: 500

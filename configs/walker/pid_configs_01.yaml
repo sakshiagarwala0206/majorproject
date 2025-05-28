@@ -1,13 +1,12 @@
 
-#Low Derivative
-wandb_project: "assistive-walker-pid"
-Kp: 8.2
-Ki: 0.4
-Kd: 2.5
-max_episodes: 30
+wandb_project: "assistive-walker-test"
+Kp: 12.5
+Ki: 3.2
+Kd: 8.7
+max_episodes: 100
 settling_threshold: 0.05
 dt: 0.05
-
+max_steps: 1000
 
 # #High Integral
 # wandb_project: "assistive-walker-pid"
