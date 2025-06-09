@@ -1,4 +1,4 @@
-wandb_project: "Q-Learning-AssistiveWalker"
+wandb_project: "assistive-walker-test"
 wandb_entity: "your_wandb_team"
 
 learning_rate: 0.08

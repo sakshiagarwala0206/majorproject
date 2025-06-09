@@ -121,6 +121,14 @@ python test/test_aswalker_qlearning.py --config cconfigs/walker/qlearning_config
 python test/pid_walker.py --config configs/walker/pid_configs_01.yaml
 
 
-python train/qlearning_walker.py --config configs/walker/qlearning_config_01.yaml
+python train/qlearning_walker.py --config configs/walker/qlearning_config_01.yaml 
 python train/qlearning_walker.py --config configs/walker/qlearning_config_02.yaml
 python train/qlearning_walker.py --config configs/walker/qlearning_config_03.yaml
+python train/ppo_walker.py --config configs/walker/ppo_01.yaml
+python train/ppo_walker.py --config configs/walker/ppo_02.yaml
+python train/ppo_walker.py --config configs/walker/ppo_03.yaml
+
+python test/test_aswalker_qlearning.py --config configs/walker/qlearning_config_01.yaml --model_path final_model/q-learning/q-learning_20250601_141911_agent.pkl --use_wandb
+python test/test_aswalker_ppo.py --config configs/walker/ppo_01.yaml --model_path final_model/ppo/Final_PPO.zip --use_wandb
+
+python test/demo3.py 

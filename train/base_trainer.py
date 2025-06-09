@@ -201,7 +201,7 @@ class BaseTrainer:
 
     def _init_wandb(self):
         wandb.init(
-            project="Q-Learning-AssistiveWalker",
+            project="AssistiveWalker_Train_Graphs_Final",
             config=self.config,
             sync_tensorboard=True,
             monitor_gym=True,

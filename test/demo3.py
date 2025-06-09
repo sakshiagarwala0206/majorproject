@@ -11,12 +11,12 @@ from gymnasium.envs.registration import register
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), './')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
-from environments.walker_1 import AssistiveWalkerContinuousEnv
+from environments.walker import AssistiveWalkerContinuousEnv
 
 register(
     id="AssistiveWalkerContinuousEnv-v0",
-    entry_point="environments.walker_1:AssistiveWalkerContinuousEnv",
-    max_episode_steps=100000,
+    entry_point="environments.walker:AssistiveWalkerContinuousEnv",
+    max_episode_steps=10000000,
 )
 
 # Initialize WandB first
@@ -27,7 +27,7 @@ wandb.init(
 
 env = gymnasium.make("AssistiveWalkerContinuousEnv-v0", render_mode="human")
 obs, _ = env.reset()
-model = PPO.load("models/ppo/BaseConfig_PPO_AW_01.zip")
+model = PPO.load("final_model/ppo/Final_PPO.zip")
 
 if p.getConnectionInfo()['isConnected'] == 0:
     p.connect(p.GUI)

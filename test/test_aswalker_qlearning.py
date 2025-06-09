@@ -162,7 +162,7 @@ if __name__ == "__main__":
 
     if args.use_wandb:
         wandb.init(
-            project="assistive-walker-test",
+            project="Final_Test_AssistiveWalker",
             config=config,
             name=f"q_test_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         )

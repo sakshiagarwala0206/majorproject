@@ -1,4 +1,4 @@
-wandb_project: "Q-Learning-AssistiveWalker"
+wandb_project: "assistive-walker-test"
 wandb_entity: "your_wandb_team"
 
 learning_rate: 0.12
@@ -7,7 +7,7 @@ epsilon: 1.0
 epsilon_decay: 0.995
 min_epsilon: 0.02
 
-bins: [16, 16, 16, 16, 16, 16, 16]
+bins: [10, 10, 10, 10, 10, 10, 10]
 obs_low: [-3.14, -2.5, -2.5, -2.5, -2.5, -2.5, -2.5]
 obs_high: [3.14, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5]
 

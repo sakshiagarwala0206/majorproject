@@ -1,6 +1,6 @@
 #Baseline (Balanced Exploration)
 
-wandb_project: "Q-Learning-AssistiveWalker"
+wandb_project: "Final_Test_AssistiveWalker"
 wandb_entity: "your_wandb_team"
 
 learning_rate: 0.1
@@ -9,7 +9,7 @@ epsilon: 1.0
 epsilon_decay: 0.999
 min_epsilon: 0.05
 
-bins: [12, 12, 12, 12, 12, 12, 12]
+bins: [10, 10, 10, 10, 10, 10, 10]
 obs_low: [-3.14, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0]
 obs_high: [3.14, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
 

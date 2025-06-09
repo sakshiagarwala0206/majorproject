@@ -85,14 +85,15 @@ def evaluate_pid(env, pid, config):
         fall_flag = False
 
         for step in range(config.max_steps):
-            if step == 100:
-                base_mass = p.getDynamicsInfo(robot_id, -1)[0]
-                p.changeDynamics(robot_id, -1, mass=base_mass + 20)
+            # if step == 100:
+            #     base_mass = p.getDynamicsInfo(robot_id, -1)[0]
+            #     p.changeDynamics(robot_id, -1, mass=base_mass + 20)
             if step == 200:
-                p.applyExternalForce(robot_id, -1, [4, 0, 0], [0, 0, 0], p.WORLD_FRAME)
+                p.applyExternalForce(robot_id, -1, [1, 0, 0], [0, 0, 0], p.WORLD_FRAME)
 
             angle_error = obs[2]
             torque_command = pid.compute(angle_error, dt)
+            torque_command = np.clip(torque_command, -5.0, 5.0)
             action = np.array([torque_command, -torque_command], dtype=np.float32)
             obs, reward, terminated, truncated, _ = env.step(action)
             done = terminated or truncated
@@ -160,7 +161,7 @@ if __name__ == "__main__":
 
     if args.use_wandb:
         wandb.init(
-            project="assistive-walker-test",
+            project="Final_Test_AssistiveWalker",
             config=config_dict,
             name=f"eval_PID_{time.strftime('%Y%m%d_%H%M%S')}"
         )

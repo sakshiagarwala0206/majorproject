@@ -17,7 +17,7 @@ from gymnasium.envs.registration import register
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), './')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
-from environments.walker_1 import AssistiveWalkerContinuousEnv
+from environments.walker import AssistiveWalkerContinuousEnv
 
 register(
     id="AssistiveWalkerContinuousEnv-v0",

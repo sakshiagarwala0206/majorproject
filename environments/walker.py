@@ -65,7 +65,7 @@ class AssistiveWalkerBaseEnv(gymnasium.Env):
         p.changeDynamics(self.robot_id, init_right_wheel, lateralFriction=1.2)
 
         # Initialize pole and wheel angles
-        init_pole_angle = np.random.uniform(-0.3, 0.3)
+        init_pole_angle = np.random.uniform(-0.2, 0.2)
         left_wheel_angle = 0
         right_wheel_angle = 0
 
@@ -128,7 +128,24 @@ class AssistiveWalkerBaseEnv(gymnasium.Env):
         base_x = obs[2]
         left_wheel_vel = obs[5]
         right_wheel_vel = obs[6]
-        reward = 1.0 - abs(pole_angle) - 0.1 * abs(base_x) - 0.01 * (left_wheel_vel**2 + right_wheel_vel**2)
+
+        fallen = abs(pole_angle) > 0.8
+
+        angle_penalty = 0.5 * abs(pole_angle)
+        base_penalty = 0.05 * abs(base_x)
+        vel_penalty = 0.002 * (left_wheel_vel**2 + right_wheel_vel**2)
+        vel_penalty = min(vel_penalty, 1.0)  # cap it
+
+        reward = 1.0 - angle_penalty - base_penalty - vel_penalty
+
+        if not fallen:
+            reward += 2.0
+        else:
+            reward -= 20.0
+
+        return reward
+
+
         return reward
 
     def _is_done(self, obs):
@@ -139,64 +156,6 @@ class AssistiveWalkerBaseEnv(gymnasium.Env):
     def close(self):
         p.disconnect()
 
-# class AssistiveWalkerDiscreteEnv(AssistiveWalkerBaseEnv):
-#     def __init__(self, render_mode=False, test_mode=False):
-#         super().__init__(render_mode=render_mode, test_mode=test_mode)
-#         # 7 original obs + 9 IMU = 16
-#         self.observation_space = spaces.Box(
-#             low=np.array(
-#                 [-np.pi, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf,   # original
-#                  -np.pi, -np.pi, -np.pi,   # IMU orientation (roll, pitch, yaw)
-#                  -np.inf, -np.inf, -np.inf,  # IMU angular velocity
-#                  -np.inf, -np.inf, -np.inf], # IMU linear acceleration
-#                 dtype=np.float32),
-#             high=np.array(
-#                 [np.pi, np.inf, np.inf, np.inf, np.inf, np.inf, np.inf,
-#                  np.pi, np.pi, np.pi,
-#                  np.inf, np.inf, np.inf,
-#                  np.inf, np.inf, np.inf],
-#                 dtype=np.float32
-#             ),
-#             dtype=np.float32
-#         )
-#         self.action_space = spaces.Discrete(3)  # 0: left, 1: right, 2: stop
-
-#     def step(self, action):
-#         torque = 0.7
-#         if action == 0:  # left
-#             left, right = -torque, torque
-#         elif action == 1:  # right
-#             left, right = torque, -torque
-#         else:  # stop
-#             left, right = 0.0, 0.0
-
-#         p.setJointMotorControl2(self.robot_id, 0, p.TORQUE_CONTROL, force=left)
-#         p.setJointMotorControl2(self.robot_id, 1, p.TORQUE_CONTROL, force=right)
-
-#         p.stepSimulation()
-#         self.current_step += 1
-
-#         obs = self._get_obs()
-#         reward = self._get_reward(obs)
-#         terminated = self._is_done(obs)
-#         truncated = False
-
-#         # Example: Log IMU data to WandB (if enabled)
-#         if WANDB_AVAILABLE:
-#             wandb.log({
-#                 "imu_roll": obs[7],
-#                 "imu_pitch": obs[8],
-#                 "imu_yaw": obs[9],
-#                 "imu_ang_vel_x": obs[10],
-#                 "imu_ang_vel_y": obs[11],
-#                 "imu_ang_vel_z": obs[12],
-#                 "imu_lin_acc_x": obs[13],
-#                 "imu_lin_acc_y": obs[14],
-#                 "imu_lin_acc_z": obs[15],
-#                 "step": self.current_step
-#             })
-
-#         return obs, reward, terminated, truncated, {}
 class AssistiveWalkerDiscreteEnv(AssistiveWalkerBaseEnv):
     def __init__(self, render_mode=False, test_mode=False):
         super().__init__(render_mode=render_mode, test_mode=test_mode)
@@ -220,7 +179,7 @@ class AssistiveWalkerDiscreteEnv(AssistiveWalkerBaseEnv):
         self.action_space = spaces.Discrete(3)
 
     def step(self, action):
-        torque = 0.7
+        torque = 2
         if action == 0:
             left, right = -torque, torque
         elif action == 1:
@@ -276,7 +235,7 @@ class AssistiveWalkerContinuousEnv(AssistiveWalkerBaseEnv):
             ),
             dtype=np.float32
         )
-        self.action_space = spaces.Box(low=np.array([-10.0, -10.0]), high=np.array([10.0, 10.0]), dtype=np.float32)
+        self.action_space = spaces.Box(low=np.array([-5, -5]), high=np.array([5, 5]), dtype=np.float32)
 
     def step(self, action):
         action = np.array(action, dtype=float).flatten()

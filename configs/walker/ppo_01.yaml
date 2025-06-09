@@ -13,4 +13,4 @@ sde_sample_freq: 4
 policy_kwargs:
   ortho_init: False
   log_std_init: -0.5
-total_timesteps: 2000000
+total_timesteps: 10000000
